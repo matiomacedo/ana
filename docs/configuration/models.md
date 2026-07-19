@@ -85,11 +85,13 @@ constrain_main_call: false
 
 ## Non-Ollama backends
 
-Ana can point at any OpenAI-compatible inference server instead of Ollama:
+Ana can point at any OpenAI-compatible inference server instead of Ollama
+(`ANA_BACKEND`, plus `ANA_BACKEND_BASE_URL` when the server isn't on its
+default port — see [Settings](settings.md#inference-backend)):
 
-- **llama.cpp** (`llama-server`): set `ANA_BACKEND=llamacpp`.
-- **vLLM or other OpenAI-compatible servers**: set
-  `ANA_BACKEND=openai_compat`.
+- **LM Studio**: `ANA_BACKEND=lmstudio`
+- **llama.cpp** (`llama-server`): `ANA_BACKEND=llamacpp`
+- **vLLM or other OpenAI-compatible servers**: `ANA_BACKEND=openai_compat`
 
 ### Speculative decoding (throughput)
 

@@ -62,7 +62,7 @@ ana
 |---|---|
 | [Architecture](reference/architecture.md) | The layered stack, the agent graph, key design decisions |
 | [Permission modes](configuration/permissions.md) | `plan` / `default` / `auto_accept` and permission rules |
-| [Tools](features/tools.md) | All 32 built-in tools and how they're gated |
+| [Tools](features/tools.md) | All 34 built-in tools and how they're gated |
 | [Memory](features/memory.md) | Three memory tiers, the code index, lessons, retention |
 | [Verification](features/verification.md) | Deterministic post-edit checks instead of an LLM critic |
 | [Security](reference/security.md) | Constitution, sandbox, secrets redaction, path safety |

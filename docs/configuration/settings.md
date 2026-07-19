@@ -40,17 +40,32 @@ cat ~/.ana/settings.json
 | `OLLAMA_DEFAULT_MODEL` | *(auto)* | Chat model. Unset: picked by RAM/VRAM — see [model recommendations](../index.md#model-recommendations) |
 | `OLLAMA_EMBED_MODEL` | `qwen3-embedding:0.6b` | Embedding model for the memory system |
 | `ANA_OLLAMA_KEEP_ALIVE` | `30m` | How long the chat model stays loaded between turns |
+| `ANA_EMBED_KEEP_ALIVE` | `2m` | How long the embedding model stays loaded after a batch — kept short so it unloads instead of evicting the chat model's KV cache |
+| `ANA_BACKGROUND_KEEP_ALIVE` | `5m` | How long helper models (compaction, titles, lessons) stay loaded after a job |
 | `ANA_BACKGROUND_MODEL` | *(auto)* | Background role: compaction summaries + lesson distillation. Defaults to the smallest installed chat model ≥ 4B params |
 | `ANA_ESCALATION_MODEL` | *(auto)* | Escalation role: format-repair retries and auto-escalate. Defaults to the largest installed |
+
+### Inference backend
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `ANA_BACKEND` | `ollama` | `ollama` \| `lmstudio` \| `llamacpp` \| `openai_compat` (covers vLLM and other OpenAI-compatible servers). Requires a backend restart |
+| `ANA_BACKEND_BASE_URL` | *(per-backend default)* | Base URL of the inference server |
+| `ANA_BACKEND_API_KEY` | — | Bearer token for the backend (local servers usually ignore it) |
 
 ### Agent behaviour
 
 | Variable | Default | Meaning |
 |---|---|---|
 | `ANA_CODE_RAG` | `on` | Semantic code retrieval into the RAG context tier (the repo map is always on) |
+| `ANA_CODE_INDEX_REFRESH_INTERVAL_S` | `120` | Minimum seconds between background code-index refreshes (0 = every turn) |
 | `ANA_VERIFY_LEVEL` | `test` | Post-edit verification depth: `off` \| `syntax` \| `lint` \| `test` — see [Verification](../features/verification.md) |
 | `ANA_AUTO_ESCALATE` | `on` | Escalate to a larger installed model after 2 consecutive post-edit verification failures in one turn |
 | `ANA_SLEEP_TIME` | `off` | Idle-time memory consolidation (experimental) — see [Memory](../features/memory.md#sleep-time-consolidation-experimental) |
+| `ANA_CHECKPOINT_DURABILITY` | `exit` | `exit` writes one full-state checkpoint per turn; `async` restores per-step checkpoints (mid-turn crash recovery, slower) |
+| `ANA_RESEARCH_AGENT_TIMEOUT_SECS` | `120` | Timeout for `research` subagents |
+| `ANA_CRITIC_AGENT_TIMEOUT_SECS` | `60` | Timeout for review subagents |
+| `ANA_INIT_AGENT_TIMEOUT_SECS` | `60` | Timeout for the project-init agent (`/init`) |
 
 ### Decoding quality
 
@@ -101,12 +116,15 @@ contexts without them.
 ## CLI configuration (`~/.ana/cli_config.toml`)
 
 ```toml
-default_mode        = "default"    # Permission mode for new sessions: plan|default|auto_accept
-default_model       = ""           # Empty = use OLLAMA_DEFAULT_MODEL
-api_host            = "127.0.0.1"
-api_port            = 8765
-show_context_budget = true         # Show context gauge in status bar
-retention_policy    = "30_days"    # Default for `ana memory prune`
+default_mode         = "default"   # Permission mode for new sessions: plan|default|auto_accept
+default_model        = ""          # Empty = use OLLAMA_DEFAULT_MODEL
+api_host             = "127.0.0.1"
+api_port             = 8765
+show_context_budget  = true        # Show context gauge in status bar
+show_reflections     = false       # Show reflection events in chat
+retention_policy     = "30_days"   # Default for `ana memory prune`
+vi_mode              = false       # Vim keybindings in the chat prompt (takes effect next chat)
+notify_after_seconds = 60          # Terminal notification when a turn takes longer (0 = off)
 ```
 
 ## `.anaignore`
