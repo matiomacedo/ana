@@ -88,7 +88,7 @@ Ana picks a default automatically based on your RAM/VRAM:
 | [Quickstart](https://matiomacedo.github.io/ana/getting-started/quickstart/) | Your first session in five minutes |
 | [CLI reference](https://matiomacedo.github.io/ana/usage/cli-reference/) | Every command, flag, and slash command |
 | [Permission modes](https://matiomacedo.github.io/ana/configuration/permissions/) | plan / default / auto_accept + permission rules |
-| [Tools](https://matiomacedo.github.io/ana/features/tools/) | All 32 built-in tools |
+| [Tools](https://matiomacedo.github.io/ana/features/tools/) | All 34 built-in tools |
 | [Memory](https://matiomacedo.github.io/ana/features/memory/) | The three tiers, code index, lessons |
 | [Security model](https://matiomacedo.github.io/ana/reference/security/) | Constitution, sandbox, secrets redaction, path safety |
 | [Troubleshooting](https://matiomacedo.github.io/ana/reference/troubleshooting/) | Common problems and `ana doctor` |

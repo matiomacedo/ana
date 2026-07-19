@@ -1,8 +1,8 @@
 # Troubleshooting
 
-Start with the built-in diagnostics — it checks your Python/uv toolchain,
-the Ollama binary, the backend, the embedding model, the port, the session
-token, and the runtime directories in one pass:
+Start with the built-in diagnostics — it checks the Ollama binary, the
+backend, the embedding model, the port, the session token, and the runtime
+directories in one pass:
 
 ```bash
 ana doctor

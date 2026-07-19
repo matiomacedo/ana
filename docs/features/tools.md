@@ -1,6 +1,6 @@
 # Tools
 
-Ana registers **32 built-in tools**, plus any tools contributed by
+Ana registers **34 built-in tools**, plus any tools contributed by
 connected [MCP servers](../extend/mcp.md) or enabled
 [plugins](../extend/plugins.md).
 
