@@ -1,128 +1,90 @@
 # Installation
 
-!!! note "Distribution coming soon"
-    Ana is not yet publicly distributed — a packaged release is planned
-    after the current benchmarking round. This page documents the
-    installation flow so you know what to expect. Watch this repository
-    for the release announcement.
+Ana ships as a self-contained binary for macOS (Apple silicon), Linux
+(x64), and Windows (x64) — no Python setup required. The only external
+dependency is [Ollama](https://ollama.com).
+
+!!! note "First release"
+    Binaries are published on the [releases
+    page](https://github.com/matiomacedo/ana/releases). If the install
+    command reports no published release, the first public release hasn't
+    landed yet — watch the repository for the announcement.
 
 ## Prerequisites
 
 | Requirement | Notes |
 |---|---|
-| macOS, Linux, or Windows 10+ | Native on all three |
-| Python 3.11+ | Managed automatically by `uv` |
+| macOS (Apple silicon), Linux x64, or Windows 10+ x64 | Prebuilt binaries |
 | [Ollama](https://ollama.com) | Installed and running |
 | 8 GB RAM minimum | 16 GB recommended for mid-tier models |
 
-### uv
-
-Ana uses [`uv`](https://docs.astral.sh/uv/) to manage Python versions and
-dependencies — it downloads the correct Python for you.
-
-```bash
-# macOS / Linux:
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Windows (PowerShell):
-powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-### Ollama
-
-Download and install Ollama from [ollama.com](https://ollama.com/download),
-then verify it is running:
+Install Ollama from [ollama.com](https://ollama.com/download), then verify
+it is running:
 
 ```bash
 curl http://localhost:11434/api/tags
 # Expected: {"models":[...]}
 ```
 
-## Installing Ana
+## Install Ana
 
-Once you have the Ana source, `make dev-setup` performs the full setup:
+=== "macOS / Linux"
 
-```bash
-cd ana
-make dev-setup
-```
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh
+    ```
 
-This creates a Python virtual environment via uv, installs all dependencies,
-and sets up the development hooks.
+    This downloads the latest release to `~/.local/share/ana` and puts an
+    `ana` command in `~/.local/bin`. If `~/.local/bin` isn't on your PATH,
+    the installer prints the line to add to your shell profile.
+
+=== "Windows"
+
+    ```powershell
+    irm https://raw.githubusercontent.com/matiomacedo/ana/main/install.ps1 | iex
+    ```
+
+    This installs to `%LOCALAPPDATA%\Programs\ana` and adds it to your
+    user PATH (restart the terminal afterwards).
+
+=== "Manual download"
+
+    Grab the archive for your platform from the
+    [releases page](https://github.com/matiomacedo/ana/releases), verify it
+    against `ana-<version>-checksums.txt`, extract it anywhere, and run the
+    `ana` launcher inside. On macOS, if you downloaded through a browser
+    and Gatekeeper objects, clear the quarantine flag:
+
+    ```bash
+    xattr -dr com.apple.quarantine path/to/ana
+    ```
 
 ### Verify the installation
 
 ```bash
-uv run ana --help
-# Expected: help tree with chat, session, memory, skills, models, health, ...
-
-ana doctor
-# One-pass diagnostics: Python, uv, Ollama, models, ports, token, directories
+ana --help
+ana doctor    # one-pass diagnostics: Ollama, models, ports, token, directories
 ```
 
-## Installing `ana` globally
-
-To run `ana` from any directory like a system command (instead of
-`uv run ana` inside the repo):
-
-```bash
-make install      # uv tool install
-```
-
-This builds Ana into an isolated environment and puts the `ana` executable
-on your PATH (`~/.local/bin/ana`). After that, from any project directory:
+## First run
 
 ```bash
 cd ~/some/project
-ana               # auto-starts the backend, then drops into chat
+ana            # auto-starts the backend, drops into chat
 ```
 
 When you run `ana`, `ana chat`, or `ana print`, the CLI starts the backend
-automatically if nothing is already listening on `127.0.0.1:8765`, waits for
-it to become ready, and stops it again when the command exits (logs go to
-`~/.ana/daemon/backend.log`). If a backend is already running it is reused
-and left alone. Ollama must be running — `ana` prints a warning if it can't
-reach it.
+automatically if nothing is already listening on `127.0.0.1:8765`, waits
+for it to become ready, and stops it again when the command exits (logs go
+to `~/.ana/daemon/backend.log`). If a backend is already running it is
+reused and left alone. Ollama must be running — `ana` prints a warning if
+it can't reach it.
 
 Optionally enable shell completion:
 
 ```bash
 ana --install-completion
 ```
-
-Remove the global install with `make uninstall`.
-
-## Platform notes
-
-=== "macOS"
-
-    No additional steps. Ollama runs as a menubar app.
-
-=== "Linux"
-
-    Ollama runs as a systemd service after installation:
-
-    ```bash
-    systemctl --user status ollama
-    ```
-
-    Shell sandboxing can use Bubblewrap (`bwrap`) in addition to Docker —
-    see [Security](../reference/security.md#sandbox).
-
-=== "Windows"
-
-    Ana runs natively on Windows. The `Makefile` targets are POSIX-only, so
-    use the underlying `uv` commands directly:
-
-    ```powershell
-    uv sync                                       # instead of `make dev-setup`
-    uv run uvicorn ana.api.main:app --port 8765   # instead of `make dev-backend`
-    ```
-
-    `uv sync` pulls the Windows-only dependencies (`pywin32`, `pywinpty`)
-    automatically. The shell tools accept native commands (`dir`, `type`,
-    `findstr`, `where`, …) run via `cmd /c`. Token-file permissions use
-    Windows ACLs automatically — no manual steps needed.
 
 ## Runtime directories
 
@@ -154,18 +116,24 @@ These directories persist across restarts. Relocate everything with the
 
 ## Updating
 
-```bash
-git pull
-uv sync          # update Python deps
-make dev-setup   # re-run full setup (safe to run repeatedly)
-```
+Re-run the install command — it replaces the binary in place and leaves
+your `~/.ana/` data untouched.
 
 ## Uninstalling
 
-```bash
-make uninstall       # remove the global `ana` command
-rm -rf ~/.ana/       # remove all Ana runtime data
-```
+=== "macOS / Linux"
+
+    ```bash
+    rm -rf ~/.local/share/ana ~/.local/bin/ana   # the binary
+    rm -rf ~/.ana/                               # all Ana runtime data
+    ```
+
+=== "Windows"
+
+    ```powershell
+    Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Programs\ana"   # the binary
+    Remove-Item -Recurse -Force "$env:USERPROFILE\.ana"            # runtime data
+    ```
 
 Deleting `~/.ana/` removes the token, all sessions, checkpoints, memory,
 skills, plugins, and settings. It is regenerated with defaults on the next

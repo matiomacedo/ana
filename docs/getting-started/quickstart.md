@@ -1,10 +1,8 @@
 # Quickstart
 
-Get from a fresh install to a working session in five minutes.
-
-!!! note "Distribution coming soon"
-    Ana is not yet publicly distributed — see
-    [Installation](installation.md) for status.
+Get from a fresh install to a working session in five minutes. Not
+installed yet? Start with [Installation](installation.md) — it's one
+command.
 
 ## 1. Pull a model
 

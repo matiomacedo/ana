@@ -16,8 +16,21 @@ ana
 **[📖 Documentation](https://matiomacedo.github.io/ana/)** · [Report an issue](https://github.com/matiomacedo/ana/issues)
 
 > **Status:** Ana is in final benchmarking ahead of its first public
-> release. This repository hosts the documentation and issue tracker;
-> distribution details will be announced here.
+> release. This repository hosts the documentation, issue tracker, and
+> [binary releases](https://github.com/matiomacedo/ana/releases).
+
+## Install
+
+```bash
+# macOS / Linux
+curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh
+
+# Windows (PowerShell)
+irm https://raw.githubusercontent.com/matiomacedo/ana/main/install.ps1 | iex
+```
+
+Requires [Ollama](https://ollama.com). Full details:
+[Installation](https://matiomacedo.github.io/ana/getting-started/installation/).
 
 ## Highlights
 
