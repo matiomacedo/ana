@@ -5,8 +5,12 @@ $ErrorActionPreference = "Stop"
 $repo = "matiomacedo/ana"
 $target = "windows-x64"
 
-$release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
-$tag = $release.tag_name
+# Pin a specific version (e.g. a prerelease):  $env:ANA_VERSION = "v0.1.0-rc1"
+$tag = $env:ANA_VERSION
+if (-not $tag) {
+    $release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
+    $tag = $release.tag_name
+}
 if (-not $tag) {
     Write-Error "Could not find a published release — check https://github.com/$repo/releases"
 }

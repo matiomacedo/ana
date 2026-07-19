@@ -1,9 +1,12 @@
 #!/bin/sh
 # Ana installer for macOS and Linux.
 #   curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh
+# Install a specific version (e.g. a prerelease):
+#   curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh -s -- v0.1.0-rc1
 set -eu
 
 REPO="matiomacedo/ana"
+requested_tag="${1:-${ANA_VERSION:-}}"
 
 case "$(uname -s)" in
   Darwin) os="macos" ;;
@@ -22,8 +25,12 @@ case "$target" in
   *) echo "No prebuilt binary for $target yet — open an issue: https://github.com/$REPO/issues"; exit 1 ;;
 esac
 
-tag="$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" \
-  | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1)"
+if [ -n "$requested_tag" ]; then
+  tag="$requested_tag"
+else
+  tag="$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" \
+    | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -1)"
+fi
 if [ -z "$tag" ]; then
   echo "Could not find a published release. If this is a fresh project, the"
   echo "first release may not be out yet — check https://github.com/$REPO/releases"
