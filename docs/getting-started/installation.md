@@ -1,22 +1,26 @@
 # Installation
 
-Ana ships as a self-contained binary for macOS (Apple silicon), Linux
-(x64), and Windows (x64) — no Python setup required. The only external
-dependency is [Ollama](https://ollama.com).
+Ana ships as a self-contained binary for macOS (Apple silicon and Intel),
+Linux (x64 and arm64), and Windows (x64) — no Python setup required. The
+only external dependency is [Ollama](https://ollama.com).
 
-!!! note "First release"
-    Binaries are published on the [releases
-    page](https://github.com/matiomacedo/ana/releases). If the install
-    command reports no published release, the first public release hasn't
-    landed yet — watch the repository for the announcement.
+!!! warning "Prereleases must be pinned"
+    Only prereleases are published so far, and the `latest` release API
+    deliberately skips prereleases — so the install command **without a
+    version** reports "Could not find a published release". Pass the
+    version explicitly, as shown below. The current tag is on the
+    [releases page](https://github.com/matiomacedo/ana/releases).
 
 ## Prerequisites
 
 | Requirement | Notes |
 |---|---|
-| macOS (Apple silicon), Linux x64, or Windows 10+ x64 | Prebuilt binaries |
+| macOS 13+ (Apple silicon or Intel), Linux x64/arm64, or Windows 10+ x64 | Prebuilt binaries |
 | [Ollama](https://ollama.com) | Installed and running |
 | 8 GB RAM minimum | 16 GB recommended for mid-tier models |
+
+Linux binaries are built on Ubuntu 22.04 (glibc 2.35); older distributions
+such as Ubuntu 20.04 or Debian 11 cannot run them.
 
 Install Ollama from [ollama.com](https://ollama.com/download), then verify
 it is running:
@@ -30,19 +34,33 @@ curl http://localhost:11434/api/tags
 
 === "macOS / Linux"
 
+    Replace the version with the current tag from the releases page:
+
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh -s -- v0.1.0-rc4
+    ```
+
+    Once a stable (non-prerelease) version exists, the same command without
+    the version installs the latest:
+
     ```bash
     curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh
     ```
 
-    This downloads the latest release to `~/.local/share/ana` and puts an
-    `ana` command in `~/.local/bin`. If `~/.local/bin` isn't on your PATH,
-    the installer prints the line to add to your shell profile.
+    This downloads the release to `~/.local/share/ana` and puts an `ana`
+    command in `~/.local/bin`. If `~/.local/bin` isn't on your PATH, the
+    installer prints the line to add to your shell profile.
 
 === "Windows"
 
+    Replace the version with the current tag from the releases page:
+
     ```powershell
+    $env:ANA_VERSION = "v0.1.0-rc4"
     irm https://raw.githubusercontent.com/matiomacedo/ana/main/install.ps1 | iex
     ```
+
+    Once a stable version exists, `$env:ANA_VERSION` can be omitted.
 
     This installs to `%LOCALAPPDATA%\Programs\ana` and adds it to your
     user PATH (restart the terminal afterwards).
