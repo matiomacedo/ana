@@ -21,7 +21,7 @@ esac
 target="${os}-${arch}"
 
 case "$target" in
-  macos-arm64|linux-x64) ;;
+  macos-arm64|macos-x64|linux-x64|linux-arm64) ;;
   *) echo "No prebuilt binary for $target yet — open an issue: https://github.com/$REPO/issues"; exit 1 ;;
 esac
 
