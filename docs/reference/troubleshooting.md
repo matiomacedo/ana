@@ -72,12 +72,33 @@ conversation, or a stronger model with `/model`. The sampler defaults
 (`ANA_MIN_P`, `ANA_REPEAT_PENALTY`) already guard against loops — raising
 `repeat_penalty` above ~1.1 hurts code output.
 
+**The model forgets things sooner than its context should allow**
+
+Check what Ana actually loaded the model with:
+
+```bash
+ana models info <model>   # Allocated: … tokens · … for the prompt
+ana doctor                # "Context allocation" — the window and what chose it
+```
+
+The `Allocated` line is the real window; `/context` is a budget inside it. If
+it's smaller than you expect, something above the auto value is setting it —
+`ANA_OLLAMA_NUM_CTX`, the `context_length` setting, or `OLLAMA_CONTEXT_LENGTH`
+— and `ana models info` names which. See
+[Context window](../configuration/models.md#context-window).
+
+**Ollama's context slider doesn't seem to apply**
+
+Ana sends an explicit `num_ctx` with every request, which overrides the
+server's default. It honours `OLLAMA_CONTEXT_LENGTH`, but only when
+`ANA_OLLAMA_NUM_CTX` and the `context_length` setting are both unset —
+`ana doctor` warns when your server setting is being shadowed.
+
 ## Agent behaviour
 
 **"Graph already running for this session" (status `busy`)**
 
-A turn is still in flight. Wait for it, or cancel it with ++ctrl+c++ in
-chat.
+A turn is still in flight. Wait for it, or interrupt it with ++esc++ in chat.
 
 **HTTP 429 on /message**
 
