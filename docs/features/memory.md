@@ -24,8 +24,8 @@ Tier 3 — Archival Store (persistent)
 
 ### Token budget allocation
 
-Ana allocates the model's effective context (80% of the advertised limit)
-across four tiers:
+Ana allocates the effective context — 80% of the window the model was loaded
+with, leaving the rest as headroom for the reply — across four tiers:
 
 | Tier | Budget | Contents |
 |------|--------|----------|
@@ -34,7 +34,9 @@ across four tiers:
 | RAG | 20% | Archival snippets from Tier 3 |
 | Overhead | 10% | Tool definitions, mode suffix |
 
-Check the live breakdown any time with `/context` in chat.
+Check the live breakdown any time with `/context` in chat; the window it is a
+slice of is set as described in
+[Context window](../configuration/models.md#context-window).
 
 ## Compaction
 

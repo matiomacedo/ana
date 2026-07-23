@@ -39,6 +39,8 @@ cat ~/.ana/settings.json
 | `OLLAMA_HOST` | `http://localhost:11434` | Ollama API endpoint |
 | `OLLAMA_DEFAULT_MODEL` | *(auto)* | Chat model. Unset: picked by RAM/VRAM — see [model recommendations](../index.md#model-recommendations) |
 | `OLLAMA_EMBED_MODEL` | `qwen3-embedding:0.6b` | Embedding model for the memory system |
+| `ANA_OLLAMA_NUM_CTX` | *(auto)* | Context window to load the model with (Ollama's `num_ctx`). Unset: the model's trained limit, capped to what your memory can hold as KV cache. `0` sends no `num_ctx` at all. Same value as the `context_length` setting below — see [Context window](models.md#context-window) |
+| `OLLAMA_CONTEXT_LENGTH` | — | Ollama's own server-side setting. Ana honours it when neither `ANA_OLLAMA_NUM_CTX` nor `context_length` is set |
 | `ANA_OLLAMA_KEEP_ALIVE` | `30m` | How long the chat model stays loaded between turns |
 | `ANA_EMBED_KEEP_ALIVE` | `2m` | How long the embedding model stays loaded after a batch — kept short so it unloads instead of evicting the chat model's KV cache |
 | `ANA_BACKGROUND_KEEP_ALIVE` | `5m` | How long helper models (compaction, titles, lessons) stay loaded after a job |

@@ -37,7 +37,29 @@ that work without leaving the chat.
 | `/copy` | Copy the last reply to the clipboard |
 | `/export [path]` | Export this session to a JSON file |
 | `/exit`, `/quit`, `/q` | Leave the chat |
-| ++ctrl+c++ | Cancel the current turn / exit chat |
+| ++esc++ | Interrupt the current turn |
+| ++ctrl+c++ | Interrupt the current turn; at an empty prompt, exit chat |
+
+## Interrupting a turn
+
+Press ++esc++ while the agent is working — mid-answer, before a tool runs, or
+while the model is still loading — and the turn stops immediately:
+
+```
+❯ refactor the auth module
+  Reasoning… (esc to interrupt)
+  I'll start by reading auth.py
+  ⎿  Read auth.py (241 lines)
+⎿  Interrupted by user
+
+❯ actually, just the token check
+```
+
+Whatever the agent produced before the interrupt stays in the conversation,
+followed by a `[Request interrupted by user]` marker, so your next message
+continues from where things really stopped and the model can see that its work
+was cut short. The model stops generating straight away, so the next message
+isn't queued behind an answer you abandoned.
 
 ## Plan mode
 
@@ -82,7 +104,20 @@ gauge (percentage of the model's context window in use). When the
 conversation approaches the limit, Ana
 [compacts automatically](../features/memory.md#compaction) in the
 background; `/compact` forces a more aggressive pass on demand, and
-`/context` breaks down exactly where the tokens are going.
+`/context` breaks down exactly where the tokens are going — plus the window
+Ana loaded the model with and what chose it:
+
+```
+╭────────────── Context · 46% (12,000/26,214 tokens) ──────────────╮
+│ core                       ██████████░░░░░░░░░░  7,000/13,107    │
+│ recall                     █░░░░░░░░░░░░░░░░░░░  300/5,242       │
+│ overhead (prompt + tools)  ███░░░░░░░░░░░░░░░░░  4,700 tokens    │
+╰──────────────────────────────────────────────────────────────────╯
+window: 32,768 (OLLAMA_CONTEXT_LENGTH) · model max 262,144
+```
+
+See [Context window](../configuration/models.md#context-window) for how that
+window is chosen and how to change it.
 
 ## Skills in chat
 

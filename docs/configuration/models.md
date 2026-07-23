@@ -30,6 +30,47 @@ ana models info qwen3.5:9b  # full effective profile for one model
 
 Switch mid-session with `/model` in chat.
 
+## Context window
+
+Three different numbers are involved, and it's worth keeping them apart:
+
+| Number | What it is | Where you see it |
+|---|---|---|
+| **Trained limit** | The context the model was actually trained for, read from Ollama | `Max` column in `ana models list`, `Context:` in `ana models info` |
+| **Allocated window** | What Ana asks the backend to load (Ollama's `num_ctx`) | `Context` column, `Allocated:` in `ana models info` |
+| **Prompt budget** | 80% of the allocated window; the rest is headroom for the reply | `/context` in chat |
+
+Ana always sends an explicit `num_ctx`. Without one Ollama falls back to its
+own small default and silently truncates long conversations, and a value that
+changes between calls forces a model reload that throws away the KV cache.
+
+You decide what that value is, in this order:
+
+| Precedence | Source |
+|---|---|
+| 1 | `ANA_OLLAMA_NUM_CTX` — escape hatch; `0` sends no `num_ctx` at all |
+| 2 | `context_length` in `~/.ana/settings.json` (editable in `/settings`) |
+| 3 | `OLLAMA_CONTEXT_LENGTH` — your own Ollama server configuration |
+| 4 | *auto*: the trained limit, capped to what your memory can hold as KV cache |
+
+A value you set is honoured even when it exceeds the memory estimate — Ana
+warns rather than silently shrinking it (`ana doctor` surfaces the warning).
+Only the auto value is capped. Any source is clamped to the model's trained
+limit. `ana models info` names whichever source won:
+
+```
+Context:   262,144 tokens (probe)
+Allocated: 102,400 tokens · 81,920 for the prompt (auto, capped to your RAM)
+```
+
+!!! note "Bigger is not free"
+    The KV cache is pre-allocated, so a large window costs memory whether or
+    not you fill it — a 4B model with a 192k window reserves ~10 GB. Set
+    `context_length` if you'd rather trade window for memory.
+
+Changing `context_length` takes effect on the next backend restart: the
+context budget Ana plans against is fixed when the model profile is built.
+
 ## Model roles
 
 Beyond the main chat model, Ana uses two optional supporting roles — both
@@ -44,13 +85,11 @@ resolved automatically from your installed models, both overridable:
 
 Each preset is a YAML file that overrides auto-detected values for a
 specific model. Ana merges: probed values ← packaged preset ←
-`~/.ana/presets/` user override (later wins on non-null keys), then
-computes `effective_context = context_limit * 0.80`.
+`~/.ana/presets/` user override (later wins on non-null keys).
 
 ```yaml
 # ~/.ana/presets/my-model.yaml
 display_name: "My Model 7B"
-context_limit: 32768
 prompt_template_family: qwen     # qwen | llama | mistral | chatml
 supports_native_tools: true
 tool_strategy: native            # native | constrained | prompted
@@ -77,7 +116,7 @@ constrain_main_call: false
 
 | Field | Meaning |
 |---|---|
-| `context_limit` | Advertised context window; Ana budgets 80% of it |
+| `context_limit` | The model's trained context. Read from Ollama — only set this to correct a model that misreports it, or to record a smaller *usable* context you measured with `ana models bench`. To change how much Ana loads, use `context_length` instead (see [Context window](#context-window)) |
 | `supports_native_tools` | Whether the model does native (API-level) tool calling |
 | `tool_strategy` | `native` (preferred), `constrained` (grammar-constrained JSON), or `prompted` |
 | `tier` | Rough capability class used in picker UI and defaults |
