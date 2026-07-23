@@ -1,8 +1,14 @@
 # Installation
 
-Ana ships as a self-contained binary for macOS (Apple silicon and Intel),
-Linux (x64 and arm64), and Windows (x64) — no Python setup required. The
-only external dependency is [Ollama](https://ollama.com).
+Ana ships as a self-contained binary for macOS (Apple silicon), Linux
+(x64 and arm64), and Windows (x64) — no Python setup required. The only
+external dependency is [Ollama](https://ollama.com).
+
+!!! info "Intel Macs are not supported"
+    LanceDB, which backs Ana's memory and code index, has not published a
+    macOS x86_64 wheel since its 0.9 series and ships no source
+    distribution, so an Intel build cannot be produced. Apple silicon,
+    Linux, and Windows are unaffected.
 
 !!! warning "Prereleases must be pinned"
     Only prereleases are published so far, and the `latest` release API
@@ -15,7 +21,7 @@ only external dependency is [Ollama](https://ollama.com).
 
 | Requirement | Notes |
 |---|---|
-| macOS 13+ (Apple silicon or Intel), Linux x64/arm64, or Windows 10+ x64 | Prebuilt binaries |
+| macOS on Apple silicon, Linux x64/arm64, or Windows 10+ x64 | Prebuilt binaries |
 | [Ollama](https://ollama.com) | Installed and running |
 | 8 GB RAM minimum | 16 GB recommended for mid-tier models |
 
