@@ -1,0 +1,12 @@
+{
+  "tier": "control",
+  "description": "Fix capped exponential backoff arithmetic inside one function",
+  "prompt": "backoff_delays returns the wrong delay sequence. The tests describe the expected growth of each delay and the ceiling it must not exceed. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

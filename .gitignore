@@ -2,3 +2,9 @@ site/
 .venv/
 __pycache__/
 .DS_Store
+
+# Benchmark output: appended per run, and the per-run evidence, which is large
+# and full of absolute paths.
+bench/results*.jsonl
+bench/report.md
+bench/artifacts/

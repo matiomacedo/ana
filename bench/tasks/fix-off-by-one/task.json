@@ -1,0 +1,12 @@
+{
+  "tier": "smoke",
+  "description": "Fix an off-by-one bug in a pagination helper",
+  "prompt": "The test suite in this project fails. Run the tests, find the bug, and fix it in the source (not the tests).",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

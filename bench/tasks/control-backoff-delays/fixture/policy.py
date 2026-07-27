@@ -1,0 +1,2 @@
+BASE_DELAY = 0.5
+MAX_DELAY = 4.0

@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Add a validation stage and wire it into a small processing pipeline",
+  "prompt": "The tests expect a record whose email has no '@' to be rejected before any other processing, while valid records still pass through unchanged. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

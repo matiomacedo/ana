@@ -1,0 +1,12 @@
+{
+  "tier": "smoke",
+  "description": "Add input validation demanded by failing tests",
+  "prompt": "The tests describe validation behaviour that transfer() does not implement yet. Make the tests pass by changing bank.py only.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

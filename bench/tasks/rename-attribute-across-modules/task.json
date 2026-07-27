@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Rename a model attribute and fix the two modules that read it",
+  "prompt": "The tests expect User to expose the address as 'email' rather than 'email_address'. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

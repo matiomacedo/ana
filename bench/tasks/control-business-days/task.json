@@ -1,0 +1,12 @@
+{
+  "tier": "control",
+  "description": "Fix an inclusive-range and weekend bug inside one function",
+  "prompt": "business_days(start, end) miscounts the working days in a range. The tests describe the expected handling of the range boundaries, weekends and holidays. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "tier": "control",
+  "description": "Fix field-quoting rules inside one function",
+  "prompt": "format_row does not quote the fields that require quoting. The tests describe which fields need quotes and how inner quotes are escaped. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

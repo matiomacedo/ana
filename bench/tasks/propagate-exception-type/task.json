@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Introduce a domain exception and update the handler that catches the old one",
+  "prompt": "The tests expect a missing record to raise the NotFound exception rather than a bare KeyError, while the existing default-returning behaviour is preserved. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

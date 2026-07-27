@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Add an abstract method to a base class and implement it in a subclass elsewhere",
+  "prompt": "The tests expect exporters to report their own file extension, and to build a filename from it. The base class must declare the requirement and refuse to answer it itself. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

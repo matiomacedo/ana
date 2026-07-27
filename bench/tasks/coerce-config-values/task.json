@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Fix a config loader whose bug spans the parser and the coercion layer",
+  "prompt": "Two configuration cases are broken: negative integers stay strings instead of becoming ints, and inline comments are not stripped so the value never coerces. Comments and blank lines must still be ignored and non-integer values stay strings. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}
