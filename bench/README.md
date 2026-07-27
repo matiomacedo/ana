@@ -18,7 +18,6 @@ tasks/<name>/
   cheat/       the most plausible single-file shortcut, which must NOT pass
 runner.py      runs the matrix and scores it
 validate.py    gates the suite before any sweep
-PREREGISTRATION.md   hypotheses, matrix and analysis, fixed before the study ran
 ```
 
 ## Tiers
