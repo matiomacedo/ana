@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Thread two new operations through a public API and its backing store",
+  "prompt": "The tests describe two operations the API does not support yet: removing a key and listing all stored keys. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}
