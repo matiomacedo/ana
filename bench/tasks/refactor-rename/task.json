@@ -1,0 +1,12 @@
+{
+  "tier": "smoke",
+  "description": "Rename a function across two modules",
+  "prompt": "The public API was renamed: tests now import parse_config from config.py, but the code still calls it load_cfg (also used in app.py). Rename it everywhere so the tests pass.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

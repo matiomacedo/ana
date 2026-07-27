@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Add a required parameter to a shared helper and fix every call site",
+  "prompt": "The tests expect monetary amounts to be rendered with their currency, as in '12.50 USD'. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

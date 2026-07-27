@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Add a parameter to a callback contract and update both the dispatcher and the handlers",
+  "prompt": "The tests expect every event handler to receive a context argument alongside the event, and the dispatcher to forward it. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

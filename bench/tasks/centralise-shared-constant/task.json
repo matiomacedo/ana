@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Move a constant duplicated in two modules into shared settings and import it in both",
+  "prompt": "A capacity limit is currently duplicated in two places. The tests expect it to be defined once, in the shared settings module, and read from there by everything that needs it. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

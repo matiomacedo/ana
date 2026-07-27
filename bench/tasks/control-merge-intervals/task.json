@@ -1,0 +1,12 @@
+{
+  "tier": "control",
+  "description": "Fix interval-merging logic inside one function",
+  "prompt": "merge(intervals) returns the wrong result for unsorted input and for intervals that touch. The tests describe the expected merged output. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

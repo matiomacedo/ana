@@ -1,0 +1,12 @@
+{
+  "tier": "smoke",
+  "description": "Implement a stubbed function from its tests",
+  "prompt": "Implement the rle_encode function in rle.py so the test suite passes. Do not modify the tests.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}
