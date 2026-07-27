@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Change a repository's return type and reconcile both of its callers",
+  "prompt": "The tests expect fetch_user to return a dict with 'name' and 'email' keys instead of a tuple. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

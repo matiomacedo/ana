@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Move a class into a new module and repoint every importer",
+  "prompt": "The tests expect the Validator class to be importable from a validators module. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

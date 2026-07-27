@@ -1,0 +1,12 @@
+{
+  "tier": "smoke",
+  "description": "Fix a broken import between two modules",
+  "prompt": "Running the tests raises an ImportError. Fix the code so the tests pass without changing the tests.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}

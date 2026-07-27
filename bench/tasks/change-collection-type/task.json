@@ -1,0 +1,12 @@
+{
+  "tier": "xfile",
+  "description": "Change a repository's return type from list to mapping and fix both consumers",
+  "prompt": "The tests expect all_users() to return a mapping keyed by user id rather than a list, while listing and lookup keep working exactly as before. Run the tests, then make them pass without changing them.",
+  "success_command": [
+    "python",
+    "-m",
+    "pytest",
+    "-x",
+    "-q"
+  ]
+}
