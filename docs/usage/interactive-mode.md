@@ -37,8 +37,45 @@ that work without leaving the chat.
 | `/copy` | Copy the last reply to the clipboard |
 | `/export [path]` | Export this session to a JSON file |
 | `/exit`, `/quit`, `/q` | Leave the chat |
+
+## Keyboard shortcuts
+
+| Key | Action |
+|-----|--------|
+| ++shift+tab++ | Cycle permission mode: `default` → `auto_accept` → `plan` |
+| ++tab++ | Complete slash commands, their arguments, and `@` file mentions |
 | ++esc++ | Interrupt the current turn |
 | ++ctrl+c++ | Interrupt the current turn; at an empty prompt, exit chat |
+
+++shift+tab++ switches mode without leaving the prompt. The box repaints with
+the new mode's name and colour, and anything already typed is kept:
+
+```
+╭─ ❮ DEFAULT ❯ · qwen3-coder:30b ─────────────╮
+│ ❯ fix the header
+
+    [shift+tab]
+
+╭─ ❮ AUTO_ACCEPT ❯ · qwen3-coder:30b ─────────╮
+│ ❯ fix the header
+```
+
+## Mentioning files with `@`
+
+Type `@` to insert a path from the current project. Completion is fuzzy, so
+`@archmd` finds `docs/architecture.md`; folders complete too, and mentions are
+ranked by how recently and often you have used them.
+
+The list is scoped to the **session's project directory** — the directory
+`ana` was started in — and never reaches outside it. Inside a git repository
+it follows `git ls-files`, so ignored files stay out; elsewhere it walks the
+directory, skipping hidden and generated paths.
+
+!!! tip "Start `ana` inside your project"
+    A session's root is fixed when it is created, from your working
+    directory. Starting `ana` from your home directory scopes `@` — and the
+    agent's file tools and code index — to your whole home directory. Ana
+    prints a warning when it detects this.
 
 ## Interrupting a turn
 
@@ -93,7 +130,25 @@ for shell — and wait for your decision:
 - **Always** — run it and stop asking for this tool for the rest of the session
 - **No** — reject; the model sees the rejection and adjusts
 
-`auto_accept` mode skips these prompts entirely; `deny`/`ask`
+**Always** persists for the whole session, including when the call you
+approved then fails. The preview simulates the edit before you decide, so it
+also tells you when an edit *cannot* apply — a stale `old_string`, or a change
+that would leave the file untouched — rather than showing you a blank panel to
+approve.
+
+Once a tool is running without prompts — after **Always**, or in
+`auto_accept` — Ana prints the diff of each edit as it is applied, so changes
+are still visible when nothing is asking for approval:
+
+```
+╭─ Edited · auth.py · Change size: +12 / -3 lines ─╮
+│ --- a/auth.py                                    │
+│ +++ b/auth.py                                    │
+│ @@ -18,7 +18,16 @@                               │
+╰──────────────────────────────────────────────────╯
+```
+
+`auto_accept` mode skips the prompts entirely; `deny`/`ask`
 [permission rules](../configuration/permissions.md#permission-rules-allowdenyask)
 still apply in every mode.
 
