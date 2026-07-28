@@ -4,8 +4,9 @@ Ana runs one agent with one system prompt. What varies between sessions is
 **how much it may touch** — controlled by a permission mode, not a set of
 distinct agent personalities.
 
-Switch with `/mode <plan|default|auto_accept>` in chat,
-`ana chat --mode ...`, or `ana session new --mode ...`.
+Switch with ++shift+tab++ in chat (cycles `default` → `auto_accept` → `plan`),
+`/mode <plan|default|auto_accept>`, `ana chat --mode ...`, or
+`ana session new --mode ...`.
 
 ## `plan`
 
@@ -84,6 +85,10 @@ Rules can also be managed in-chat with `/permissions`.
 
 ## Switching modes mid-session
 
+Press ++shift+tab++ at the prompt to cycle `default` → `auto_accept` → `plan`.
+The input box repaints with the new mode and keeps whatever you have typed, so
+you can change your mind about a request before sending it.
+
 ```bash
 # In chat:
 /mode auto_accept
@@ -91,6 +96,9 @@ Rules can also be managed in-chat with `/permissions`.
 # Via the API:
 PATCH /sessions/{id}/mode  {"mode": "auto_accept"}
 ```
+
+Cycling into `plan` records the mode you came from, so `/plan off` restores it
+exactly as it would after `/plan`.
 
 ## How a tool call is authorized
 
