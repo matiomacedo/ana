@@ -112,6 +112,40 @@ A deterministic **code graph** (tree-sitter, zero model calls) additionally
 powers the `graph_explain` and `graph_path` tools for call/caller/
 inheritance questions.
 
+### What gets indexed
+
+The index covers the **session's project directory** and nothing outside it.
+Symlinks that point elsewhere are not followed, so the directory `ana` was
+started in is the boundary.
+
+Beyond source code, it includes web and markup files, stylesheets, templates,
+schemas and IDLs, infrastructure and config (`.yaml`, `.toml`, `.tf`, `.hcl`,
+`.nix`), documentation (`.md`, `.rst`, `.adoc`), and extension-less build
+files such as `Dockerfile`, `Makefile` and `Jenkinsfile`. Twenty-nine
+languages have a tree-sitter grammar and chunk on their definitions;
+everything else chunks on overlapping line windows, which is enough to search.
+
+Deliberately excluded:
+
+- **Hidden paths**, which is where credentials and tool caches live —
+  `.env`, `.npmrc`, `.netrc`, `.ssh/`, `.aws/`. CI configuration is the
+  exception and stays searchable: `.github/`, `.gitlab/`, `.circleci/`,
+  `.pre-commit-config.yaml` and similar.
+- **Lock files** (`package-lock.json`, `uv.lock`, `Cargo.lock`, `go.sum`, …)
+  and generated directories (`node_modules`, `dist`, `build`).
+- **Data JSON.** Only well-known config files (`package.json`,
+  `tsconfig*.json`, `composer.json`, …) are read; everything else with a
+  `.json` suffix is treated as data.
+
+Discovery stops at 3,000 files. When that limit bites, grammar-backed source
+is kept ahead of docs and config, so a large `docs/` tree cannot crowd out
+the code.
+
+!!! warning "Start `ana` inside the project you want indexed"
+    The root is fixed when the session is created, from your working
+    directory. Starting `ana` from your home directory points the index at
+    your whole home directory — irrelevant results, and slow.
+
 ## Lessons (durable project knowledge)
 
 Ana distils durable, per-project facts from sessions — conventions,
