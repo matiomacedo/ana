@@ -107,9 +107,20 @@ it with `ANA_MESSAGE_RATE_LIMIT_PER_MINUTE`.
 
 **"Tool 'X' is not permitted in plan mode"**
 
-Plan mode is read-only by design. Switch modes with `/mode default` (or
-`/plan execute` to act on a finished plan). See
+Plan mode is read-only by design. Switch modes with ++shift+tab++ or
+`/mode default` (or `/plan execute` to act on a finished plan). See
 [Permission modes](../configuration/permissions.md).
+
+**`@` lists unrelated files, or code search returns irrelevant results**
+
+The session is probably rooted at your home directory. A session's project
+directory is fixed when it is created, from wherever `ana` was started — so
+running `ana` from `~` scopes `@`, the file tools and the code index to your
+whole home directory. Ana prints a warning at startup when it detects this.
+
+Quit and start `ana` from inside the project. Existing sessions keep the root
+they were created with, so resuming one will not fix it — start a new session
+from the right directory.
 
 **"Permission denied: <action> on <target>"**
 
