@@ -37,18 +37,53 @@ if [ -z "$tag" ]; then
   exit 1
 fi
 
-url="https://github.com/$REPO/releases/download/$tag/ana-$tag-$target.tar.gz"
+asset="ana-$tag-$target.tar.gz"
+base="https://github.com/$REPO/releases/download/$tag"
 share="${XDG_DATA_HOME:-$HOME/.local/share}/ana"
 bin_dir="$HOME/.local/bin"
 
 echo "Installing ana $tag ($target)..."
 tmp="$(mktemp -d)"
-trap 'rm -rf "$tmp"' EXIT
-curl -fL --progress-bar "$url" -o "$tmp/ana.tar.gz"
+staged=""
+trap 'rm -rf "$tmp" "$staged"' EXIT
+curl -fL --progress-bar "$base/$asset" -o "$tmp/$asset"
 
-rm -rf "$share"
-mkdir -p "$share" "$bin_dir"
-tar -xzf "$tmp/ana.tar.gz" -C "$share" --strip-components 1
+if ! curl -fsSL "$base/ana-$tag-checksums.txt" -o "$tmp/checksums.txt"; then
+  echo "Could not download the checksums for $tag, so nothing was installed."
+  echo "Try again, or check https://github.com/$REPO/releases/tag/$tag"
+  exit 1
+fi
+expected="$(awk -v asset="$asset" '{ file = $2; sub(/^\*/, "", file); sub(/^\.\//, "", file); if (file == asset) print $1 }' "$tmp/checksums.txt")"
+if command -v sha256sum > /dev/null 2>&1; then
+  actual="$(sha256sum "$tmp/$asset" | awk '{ print $1 }')"
+elif command -v shasum > /dev/null 2>&1; then
+  actual="$(shasum -a 256 "$tmp/$asset" | awk '{ print $1 }')"
+else
+  echo "Install sha256sum or shasum so the download can be verified. Nothing was installed."
+  exit 1
+fi
+if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
+  echo "The download does not match its published checksum, so nothing was installed."
+  echo "  expected: ${expected:-no entry for $asset}"
+  echo "  actual:   $actual"
+  exit 1
+fi
+
+# Unpack and run the new version beside the old one, so a bad archive or a
+# binary that won't start leaves the existing install working.
+mkdir -p "$(dirname "$share")" "$bin_dir"
+staged="$(mktemp -d "$share.new.XXXXXX")"
+tar -xzf "$tmp/$asset" -C "$staged" --strip-components 1
+"$staged/ana" --help > /dev/null
+
+previous=""
+if [ -e "$share" ]; then
+  previous="$(mktemp -d "$share.old.XXXXXX")"
+  mv "$share" "$previous/"
+fi
+mv "$staged" "$share"
+staged=""
+[ -z "$previous" ] || rm -rf "$previous"
 
 # Wrapper (not a symlink) so the launcher always finds its _internal dir.
 printf '#!/bin/sh\nexec "%s/ana" "$@"\n' "$share" > "$bin_dir/ana"
