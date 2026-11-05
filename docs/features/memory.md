@@ -1,87 +1,89 @@
 # Memory
 
-Ana uses a three-tier memory system to maintain context across turns and
-sessions, plus a semantic code index and a durable per-project lessons
-store.
+Ana keeps the conversation inside the model's context window, and remembers
+what stays true about a project. Within a session that means the message
+window and its summaries. Across sessions, only three things carry over:
+`ana.md`, per-project lessons, and an optional project brief. A new session
+doesn't see earlier sessions' conversations or summaries.
 
-## The three tiers
+## Project instructions (`ana.md`)
 
+If the project has an `ana.md`, it goes into the system prompt on every turn,
+labelled as project instructions. The first 8,000 characters are sent, and the
+prompt says so if the file is cut. Edits apply from the next turn.
+
+It loads whether or not you've [trusted the project](../reference/security.md):
+it's text, and any tool call it asks for still goes through the permission
+checks. Run `/init` to generate one. In a chat session with no `ana.md`, Ana drafts
+one after your first turn finishes, so it never delays your first answer.
+
+## The context window
+
+The model sees the system prompt, then the message window: the conversation so
+far, with older parts replaced by summaries. Before every model call, Ana
+estimates the next prompt from the size of the last one plus what has been added
+since. If that's over **75% of `num_ctx`**:
+
+1. Large tool results from before the latest step are cut to their first 1,000
+   characters. This needs no model call, and often it's enough.
+2. If not, Ana compacts and waits for the result before calling the model, so a
+   prompt doesn't outgrow the window while a summary is being written. You see
+   "Compacting the conversation", and Esc interrupts it.
+
+Compaction summarises the oldest messages and keeps the newest that fit:
+
+- Your latest request stays word for word, whatever else is summarised.
+- A tool call and its results are kept or summarised together.
+- Earlier summaries stay as written rather than being summarised again. Once
+  they pass 15% of the prompt budget the oldest are dropped from the window; the
+  summary file keeps them.
+- A summary that comes back empty, or no shorter than what it summarises, is
+  refused and the conversation stays as it was.
+- After a failure Ana waits a few steps before trying again, and waits longer
+  each time.
+
+If a prompt still doesn't fit, you get a warning saying so. Ollama cuts an
+oversized prompt without telling you, so this is the only sign. Run `/compact`,
+or use a model with a larger context.
+
+`/compact` compacts now, keeping only the latest exchange. The fixed cost of the
+prompt (system prompt, tool schemas, repo map) can't be compacted, so `/context`
+never reaches zero.
+
+`/context` shows two figures: `core` is the message window and `overhead` is
+everything else, measured from the last call. The window itself is set as
+described in [Context window](../configuration/models.md#context-window).
+
+## Summaries
+
+Each compaction adds to one file, `~/.ana/memory/<session-id>/summary.json`.
+A session's window is restored from its checkpoint after a restart, so summaries
+aren't fed back to the model. The file is there for you to read and search:
+
+```bash
+ana memory list                     # every session's summaries
+ana memory search "parser"          # or /memory parser in chat
+ana memory delete <session-id>
+ana memory stats                    # per-session counts + LanceDB size
 ```
-Tier 1 — Core Context Window
-  Always in context. The live conversation.
-  When 90% full → compaction triggered.
 
-Tier 2 — Recall Store (per session, in-memory)
-  BM25 (40%) + vector (60%) hybrid retrieval.
-  Stores compaction summaries.
-  Rebuilt from Tier 3 on backend restart.
+`/rewind` removes summaries written after the point you rewound to.
 
-Tier 3 — Archival Store (persistent)
-  LanceDB vector database + git-backed JSON files.
-  Survives backend restarts.
-  Source of truth for Tier 2 warmup.
-```
-
-### Token budget allocation
-
-Ana allocates the effective context — 80% of the window the model was loaded
-with, leaving the rest as headroom for the reply — across four tiers:
-
-| Tier | Budget | Contents |
-|------|--------|----------|
-| Core | 50% | System prompt + conversation history |
-| Recall | 20% | Retrieved summaries from Tier 2 |
-| RAG | 20% | Archival snippets from Tier 3 |
-| Overhead | 10% | Tool definitions, mode suffix |
-
-Check the live breakdown any time with `/context` in chat; the window it is a
-slice of is set as described in
-[Context window](../configuration/models.md#context-window).
-
-## Compaction
-
-When the core tier reaches 90% of its budget:
-
-1. The oldest 50% of conversation turns are summarised by the LLM
-2. The summary is written to **both** Tier 2 and Tier 3
-3. The summarised turns are replaced by a `[Memory compaction]` message
-4. A compaction event is broadcast to connected clients
-
-Compaction runs as a **background task**, so the conversation is never
-blocked, and a begin/end guard ensures only one compaction is in flight per
-session.
-
-A user-initiated `/compact` is more aggressive than the automatic
-threshold: it summarises everything except the trailing exchange, since you
-explicitly asked for maximum recovery. The fixed prompt overhead (system
-prompt, tool schemas, repo map) cannot be compacted — `/context` never
-drops to zero.
-
-## Memory retrieval
-
-Once per user turn (before the first model call), Ana queries concurrently:
-
-- Tier 2 (in-memory) for this session's compaction summaries
-- Tier 3 (LanceDB) for archival context from older sessions — only when
-  Tier 2 finds nothing
-- The per-project lessons store and the semantic code index (when a
-  project directory is set)
-
-Retrieved context is injected as a clearly-labelled `<context>` block right
-after the latest user message — **not** into the system prompt — so the
-KV-cache prefix over the prior conversation survives across turns, and the
-model is told the material is background reference, not instructions.
+!!! note "Upgrading from an older version"
+    Older versions kept vector tables and per-session git repos. Ana no longer
+    uses them. They stay in `~/.ana/lancedb` and `~/.ana/memory` until you delete
+    them. Old `compaction_*.json` files still show up in `ana memory list` and
+    `search`, but `delete` and `prune` leave them alone, and they never reach the
+    model.
 
 ## Retention policies
 
-The configured policy (`ANA_MEMORY_RETENTION`, default `30_days`) is
-enforced automatically by a sweep at every backend startup — expired
-archival summaries, their git-backed mirrors, and old events are deleted
-without a manual prune:
+The configured policy (`ANA_MEMORY_RETENTION`, default `30_days`) is enforced by
+a sweep at every backend startup, which deletes expired summaries and old events:
 
-| Policy | Keeps memory for |
+| Policy | Keeps summaries for |
 |--------|-----------------|
-| `session_end` | Deleted when the session ends |
+| `session_end` | Deleted at the next sweep or prune |
 | `1_day` | 1 day after creation |
 | `30_days` | 30 days (default) |
 | `1_year` | 1 year |
@@ -89,7 +91,6 @@ without a manual prune:
 
 ```bash
 ana memory prune --policy 30_days --yes    # apply a policy now
-ana memory stats                            # per-session archival counts + DB size
 ```
 
 Change the default in `.env` (`ANA_MEMORY_RETENTION=1_year`) or
@@ -97,20 +98,23 @@ Change the default in `.env` (`ANA_MEMORY_RETENTION=1_year`) or
 
 ## Code index (semantic code search)
 
-Separate from the conversational tiers, Ana maintains a LanceDB-backed
-semantic index of the project's source: files are chunked along AST
-boundaries and embedded, refreshed incrementally by mtime as a background
-task each turn, so indexing never blocks the conversation.
+Ana keeps a LanceDB-backed semantic index of the project's source: files are
+chunked along AST boundaries and embedded, and refreshed incrementally by mtime
+in the background, so indexing never blocks the conversation.
 
 - A compact **repo map** (one line per file, ranked by import in-degree) is
-  always injected into the stable system-prompt prefix.
-- The fuller semantic RAG lookup is controlled by `ANA_CODE_RAG` (`on` by
-  default), and the model can query the index on demand via the
-  `code_search` [tool](tools.md).
+  always in the system prompt. It's built once per session.
+- The model searches the index with the `code_search` [tool](tools.md), which
+  builds it on first use.
+- `ANA_CODE_RAG=on` also adds search results to every turn. It's off by default.
 
-A deterministic **code graph** (tree-sitter, zero model calls) additionally
-powers the `graph_explain` and `graph_path` tools for call/caller/
-inheritance questions.
+A deterministic **code graph** (tree-sitter, zero model calls) powers the
+`graph_explain` and `graph_path` tools and finds the tests an edit affects.
+Imports resolve to files for Python (including relative imports and one level of
+`__init__` re-exports), JavaScript and TypeScript, Java and Go. Rust, C# and PHP
+imports are matched by path only, so most stay unresolved. Release builds include
+the grammars; installed from source, each downloads on first use. If one is
+missing Ana tells you which files were skipped.
 
 ### What gets indexed
 
@@ -148,15 +152,16 @@ the code.
 
 ## Lessons (durable project knowledge)
 
-Ana distils durable, per-project facts from sessions — conventions,
-build/test commands, architecture notes, stated preferences — into a
-lessons store. This is distinct from compaction summaries (which capture
-*what happened* in a session) and from crystallized skills (which capture
-*reusable procedures*): lessons capture *facts about the project* that
-should inform every future session.
+When you leave `ana chat`, Ana distils durable, per-project facts from the
+session in the background — conventions, build/test commands, architecture notes,
+stated preferences — into a lessons store. `ana print` doesn't. This is distinct
+from compaction summaries (which capture *what happened* in a session) and from
+crystallized skills (which capture *reusable procedures*): lessons capture *facts
+about the project* that should inform future sessions.
 
-Search everything remembered about past work with `/memory <query>` in
-chat.
+On each turn, up to two lessons are added to the context, and only those close
+enough to your request to be relevant. Lessons need an embedding model and don't
+expire.
 
 ## Sleep-time consolidation (experimental)
 

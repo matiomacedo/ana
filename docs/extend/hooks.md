@@ -7,7 +7,9 @@ you invoke by name.
 ## Shell hooks
 
 Hooks are defined in `~/.ana/hooks.toml` (global) or
-`<project>/.ana/hooks.toml` (project):
+`<project>/.ana/hooks.toml` (project). Project hooks run only once the project is
+[trusted](../reference/security.md#project-trust). Hooks run as you, outside the sandbox,
+with your full environment:
 
 ```toml
 [[hooks]]
@@ -29,7 +31,7 @@ List active hooks with `/hooks` in chat.
 ```toml
 [[hooks]]
 event = "before"
-tools = ["edit_file", "write_file", "apply_patch"]
+tools = ["edit_file", "write_file", "multi_edit"]
 command = "sh -c '! git ls-files -u | grep -q .'"
 ```
 

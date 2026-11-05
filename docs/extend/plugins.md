@@ -17,10 +17,10 @@ A plugin subclasses the `AnaPlugin` base class and registers for events:
 
 ## Installing and managing
 
-Plugins are discovered from `~/.ana/plugins/` and
-`<project>/.ana/plugins/` (each plugin directory needs a `plugin.json`
-manifest or an `__init__.py` exposing an `AnaPlugin` subclass), or via
-Python entry points.
+Plugins are discovered from `~/.ana/plugins/` and from Python entry points, for
+every session. `<project>/.ana/plugins/` loads only for that project's sessions, and
+only once it's [trusted](../reference/security.md#project-trust). Each plugin directory
+needs a `plugin.json` manifest or an `__init__.py` exposing an `AnaPlugin` subclass.
 
 ```bash
 ana plugin list

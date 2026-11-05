@@ -49,8 +49,8 @@ finished plan. See [Permission modes](../configuration/permissions.md).
 
 **Approve changes as they happen.** In the default mode, destructive actions
 (file writes, shell commands) pause with a diff preview until you approve.
-Choose "always allow" for a tool to stop being asked for the rest of the
-session, or switch to `/mode auto_accept` when you trust the plan.
+Answer `a` for "always" to stop being asked about that tool, or that program for
+shell commands, for the rest of the session, or switch to `/mode auto_accept` when you trust the plan.
 
 **One-shot, scriptable runs.** `ana print` sends a single prompt and prints
 the reply — no interactive session:

@@ -51,7 +51,7 @@ You decide what that value is, in this order:
 | 1 | `ANA_OLLAMA_NUM_CTX` — escape hatch; `0` sends no `num_ctx` at all |
 | 2 | `context_length` in `~/.ana/settings.json` (editable in `/settings`) |
 | 3 | `OLLAMA_CONTEXT_LENGTH` — your own Ollama server configuration |
-| 4 | *auto*: the trained limit, capped to what your memory can hold as KV cache |
+| 4 | *auto*: 32K, or less when the trained limit or your memory is smaller |
 
 A value you set is honoured even when it exceeds the memory estimate — Ana
 warns rather than silently shrinking it (`ana doctor` surfaces the warning).
@@ -60,16 +60,21 @@ limit. `ana models info` names whichever source won:
 
 ```
 Context:   262,144 tokens (probe)
-Allocated: 102,400 tokens · 81,920 for the prompt (auto, capped to your RAM)
+Allocated: 32,768 tokens · 26,214 for the prompt (auto, Ana's 32K default)
 ```
 
 !!! note "Bigger is not free"
     The KV cache is pre-allocated, so a large window costs memory whether or
-    not you fill it — a 4B model with a 192k window reserves ~10 GB. Set
-    `context_length` if you'd rather trade window for memory.
+    not you fill it. Measured on `qwen3.5:4b`, a 32K window uses about 2 GB and
+    a 192K window about 10 GB, with no change in load time or generation speed.
+    To go above 32K, set `context_length` or `ANA_OLLAMA_NUM_CTX`.
 
 Changing `context_length` takes effect on the next backend restart: the
 context budget Ana plans against is fixed when the model profile is built.
+
+On LM Studio, llama.cpp and OpenAI-compatible servers, the trained limit is
+whatever the server reports. If it reports nothing, Ana uses its default profile,
+so set `context_length` to match what the server actually loaded.
 
 ## Model roles
 
@@ -78,8 +83,8 @@ resolved automatically from your installed models, both overridable:
 
 | Role | Used for | Default | Override |
 |---|---|---|---|
-| **Background** | Compaction summaries, lesson distillation, watch reviews | Smallest installed chat model ≥ 4B params | `ANA_BACKGROUND_MODEL` |
-| **Escalation** | Format-repair retries; auto-escalate after repeated verification failures | Largest installed model | `ANA_ESCALATION_MODEL` |
+| **Background** | Compaction summaries, lesson distillation, watch reviews | The session's own model, so no second model loads | `ANA_BACKGROUND_MODEL` |
+| **Escalation** | Format-repair retries; auto-escalate after repeated verification failures | Largest installed model that fits in memory. Off Ollama, none unless you set one | `ANA_ESCALATION_MODEL` |
 
 ## Model presets
 
@@ -118,7 +123,7 @@ constrain_main_call: false
 |---|---|
 | `context_limit` | The model's trained context. Read from Ollama — only set this to correct a model that misreports it, or to record a smaller *usable* context you measured with `ana models bench`. To change how much Ana loads, use `context_length` instead (see [Context window](#context-window)) |
 | `supports_native_tools` | Whether the model does native (API-level) tool calling |
-| `tool_strategy` | `native` (preferred), `constrained` (grammar-constrained JSON), or `prompted` |
+| `tool_strategy` | `native` (preferred), `constrained` (grammar-constrained JSON), or `prompted`. Without one, Ana uses `native` when the backend reports tool support; otherwise `constrained` on Ollama and `prompted` elsewhere |
 | `tier` | Rough capability class used in picker UI and defaults |
 | `sampling` | Per-model sampler overrides |
 

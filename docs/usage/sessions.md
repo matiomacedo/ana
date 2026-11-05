@@ -2,8 +2,10 @@
 
 Every conversation is a **session**: a durable thread with its own
 permission mode, project directory, conversation history, and memory.
-Sessions survive backend restarts — the agent graph checkpoints every step
-to SQLite, so a resumed session continues exactly where it stopped.
+Sessions survive backend restarts — by default the agent graph checkpoints every
+step to SQLite, so a resumed session continues from the last step that finished,
+even after a crash mid-turn. `ANA_CHECKPOINT_DURABILITY=exit` writes one checkpoint
+per turn instead, which is faster but loses a turn that crashes.
 
 ## Managing sessions
 
@@ -32,7 +34,8 @@ trying a risky direction while keeping the original intact.
 `/rewind [turns]` rolls the session back N user turns — **conversation and
 workspace together**. It forks the session's checkpoint thread back to that
 point and restores every file the agent edited since, from the per-file
-snapshots taken before each write.
+snapshots taken before each write. Rewinding to before the first message empties
+the conversation and restores every file the session edited.
 
 ```
 ❯ /rewind 2
@@ -55,12 +58,20 @@ escape hatch when an edit goes wrong. See
 | Conversation + graph state | `~/.ana/checkpoints/checkpoints.db` | Yes |
 | Session metadata (mode, project, title) | `~/.ana/sessions.db` | Yes |
 | Pre-edit file snapshots | snapshot store per project | Yes |
-| Compaction summaries | [Tier 2/3 memory](../features/memory.md) | Yes |
-| In-context conversation window | Tier 1 (rebuilt from checkpoints) | Yes |
+| Compaction summaries | [`~/.ana/memory/<session-id>/summary.json`](../features/memory.md#summaries) | Yes |
+| In-context conversation window | Rebuilt from checkpoints | Yes |
 
-Delete a single session with `ana session delete <id>`; wipe everything by
+Delete a single session, along with its checkpoints, with
+`ana session delete <id>`; wipe everything by
 stopping the backend and removing `~/.ana/`
 (see [Troubleshooting](../reference/troubleshooting.md#resetting-state)).
+
+## Titles
+
+A new chat session gets its title from your first message, generated after the first
+turn finishes so it doesn't delay your first answer. If you send another message
+before it's done, Ana stops it and tries again after that turn. An interrupted turn
+skips it.
 
 ## Related
 

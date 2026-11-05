@@ -2,8 +2,9 @@
 
 The `ana` command is the single entry point. `ana`, `ana chat`, and
 `ana print` auto-start the backend if nothing is listening on
-`127.0.0.1:8765`, and stop it again on exit. Other commands require a
-running backend. Ollama must already be running.
+`127.0.0.1:8765`. Terminals share it, and it stops itself about two minutes after
+the last one leaves. Other commands require a running backend. Ollama must already
+be running.
 
 ## Chat
 
@@ -29,6 +30,8 @@ ana print -f json "…"                # full transcript as JSON
 ana print -f stream-json "…"         # one JSON event per line
 git diff | ana print -               # prompt from stdin
 ana print -s <session-id> "…"        # continue an existing session
+ana print --trust "…"                # trust this project's .ana config first
+ana trust [path]                     # review what a project would run, and trust it
 ```
 
 `ana print` exits non-zero when the turn ends in a non-recoverable error.
@@ -55,7 +58,7 @@ See [Sessions & rewind](sessions.md).
 ## Memory
 
 ```bash
-ana memory stats                                     # per-session archival counts + DB size
+ana memory stats                                     # per-session summary counts + DB size
 ana memory prune --policy 30_days --yes              # apply a retention policy
 ana memory prune --policy session_end --session a3f1bc7d
 ```
@@ -66,7 +69,8 @@ Valid retention policies: `session_end`, `1_day`, `30_days`, `1_year`,
 ## Models
 
 ```bash
-ana models list             # all available Ollama models with profiles
+ana models                  # same as ana models list
+ana models list             # all available Ollama models; ● marks the current one
 ana models info qwen3.5:9b  # full profile for one model
 ```
 
@@ -83,7 +87,7 @@ ana permissions clear
 ana permissions seed        # re-seed the built-in default rules
 ```
 
-See [Permission modes](../configuration/permissions.md#permission-rules-allowdenyask).
+See [Permission modes](../configuration/permissions.md#permission-rules).
 
 ## Skills
 

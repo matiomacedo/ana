@@ -102,8 +102,9 @@ A turn is still in flight. Wait for it, or interrupt it with ++esc++ in chat.
 
 **HTTP 429 on /message**
 
-The backend rate-limits messages to 10/minute per client by default. Raise
-it with `ANA_MESSAGE_RATE_LIMIT_PER_MINUTE`.
+The backend rate-limits messages from remote clients to 10/minute by default.
+Clients on the same machine aren't limited. Raise it with
+`ANA_MESSAGE_RATE_LIMIT_PER_MINUTE`.
 
 **"Tool 'X' is not permitted in plan mode"**
 
@@ -137,11 +138,12 @@ outside it.
 
 ## Shell & sandbox
 
-**"shell commands run unsandboxed" on macOS/Windows**
+**"shell commands run unsandboxed" on Windows or Linux**
 
-Without Docker installed, `ANA_SANDBOX_MODE=auto` falls back to local
-(unsandboxed) execution. Install Docker for container isolation, or set
-`ANA_SANDBOX_MODE=docker` to fail loudly instead of falling back.
+macOS uses `sandbox-exec` by default. Elsewhere, without Docker or bubblewrap,
+`ANA_SANDBOX_MODE=auto` falls back to `local`, which isolates nothing, and lint and test
+checks are skipped until you run `ana trust`. Windows has no sandbox besides Docker. Set
+`ANA_SANDBOX_MODE=docker` or `bubblewrap` to fail with an error instead of falling back.
 
 **Shell commands time out**
 

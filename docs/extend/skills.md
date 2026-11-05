@@ -15,7 +15,8 @@ Ana ships with: `solid`, `commit-message`, `code-review`,
 
 A skill is a markdown file (`*.md`, or `<name>/SKILL.md`) with YAML
 frontmatter, placed in `~/.ana/skills/` (global) or
-`<project>/.ana/skills/` (project):
+`<project>/.ana/skills/` (project, once the project is
+[trusted](../reference/security.md#project-trust)):
 
 ```markdown
 ---

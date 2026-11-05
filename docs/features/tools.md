@@ -1,6 +1,6 @@
 # Tools
 
-Ana registers **34 built-in tools**, plus any tools contributed by
+Ana registers **30 built-in tools**, plus any tools contributed by
 connected [MCP servers](../extend/mcp.md) or enabled
 [plugins](../extend/plugins.md).
 
@@ -30,14 +30,10 @@ model sees it.
 | `diff` | No | Yes |
 | `git` | No | Yes |
 | `web_search` | No | Yes |
-| `webfetch` | No | Yes |
-| `run_python` | No | No |
+| `webfetch` | Yes, it asks first | Yes |
 | `shell_command` | Yes | No |
-| `run_shell_readonly` | No | Yes |
 | `rename_file` | Yes | No |
 | `delete_file` | Yes | No |
-| `move_file` | Yes | No |
-| `apply_patch` | Yes | No |
 | `undo` | Yes | No |
 | `lsp_definition` | No | Yes |
 | `lsp_references` | No | Yes |
@@ -76,8 +72,9 @@ search/replace edits to one file in a single atomic call: all edits succeed
 or the file is left untouched, with the error naming the failing edit.
 Destructive.
 
-**`rename_file(path, new_path)` / `move_file(path, dest)` /
-`delete_file(path)`** — filesystem mutations. All destructive.
+**`rename_file(source, destination)`** — renames or moves a file within the project,
+creating parent directories as needed. **`delete_file(path)`** — deletes a file or
+empty directory, to the trash when it can. Both destructive.
 
 **`list_directory(path)`** — lists files and directories at a path
 (non-recursive).
@@ -108,10 +105,8 @@ between two file versions, or a file and one of its snapshots.
 **`git(subcommand, args?)`** — read-only repository inspection: `status`,
 `diff`, `log`, `show`, or `blame`. Arguments are passed as an argv list (no
 shell) and flags are restricted to a safe read-only set, so it cannot
-mutate the repo or smuggle options.
-
-**`apply_patch(path, patch)`** — applies unified diff content to a file.
-Destructive.
+mutate the repo or smuggle options. Commands named in the repo's own git config,
+such as `core.fsmonitor` or a diff driver, are overridden rather than run.
 
 **`undo(path?)`** — restores the most recent snapshot for a file (or the
 latest edited file). Destructive (it mutates the file back). See
@@ -119,17 +114,11 @@ latest edited file). Destructive (it mutates the file back). See
 
 ## Execution tools
 
-**`run_python(code, timeout_secs?)`** — executes Python in a
-RestrictedPython sandbox: no `subprocess`/`socket`/`os.system`, path-scoped
-`open()`, output truncated at 8,000 characters, default 30s timeout.
-
-**`shell_command(command, timeout_secs?)`** — runs a shell command through
-the sandbox factory (Docker → Bubblewrap → local fallback, see
-[Security](../reference/security.md#sandbox)). Destructive.
-
-**`run_shell_readonly(command, timeout_secs?)`** — same sandbox,
-restricted to read-only inspection commands; this is the shell available in
-`plan` mode.
+**`shell_command(command)`** — runs an allow-listed program, without a shell, through
+the [sandbox](../reference/security.md#sandbox). On macOS that's `sandbox-exec` by
+default. Windows has none of its own, and Linux needs Docker or bubblewrap. It has
+network access. Destructive. Not available in `plan` mode, so `plan` has no general
+shell; it inspects a repository with `git`.
 
 ## Web tools
 
@@ -137,8 +126,9 @@ restricted to read-only inspection commands; this is the shell available in
 (`ANA_SEARCH_PROVIDER`: `duckduckgo` by default, or `tavily`/`brave` with
 an API key).
 
-**`webfetch(url)`** — fetches a URL's content, with SSRF guards on
-redirects.
+**`webfetch(url)`** — fetches up to 1 MB from a public address, checked on every
+redirect. It asks first in `default` and `plan` mode, because a URL can carry out what
+the model has read.
 
 ## LSP tools
 
@@ -163,7 +153,8 @@ project. Destructive.
 **`task(description, subagent_type)`** — spawns a
 [subagent](subagents.md) (a fresh invocation of the same graph, forced
 into `plan` mode) to research or explore without polluting the parent's
-context; only the final answer returns.
+context; only the final answer returns. Subagents can't use `webfetch`, because nobody
+can answer a confirmation inside one.
 
 **`skill(name)`** — loads the full body of a named
 [skill](../extend/skills.md) on demand.

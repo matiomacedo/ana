@@ -15,18 +15,18 @@ ana
 
 ## What Ana can do
 
-- **Write and edit code** — file, patch, multi-edit, and LSP-aware editing
+- **Write and edit code** — file, multi-edit, symbol, and LSP-aware editing
   tools, with post-edit syntax → lint → test verification feeding failures
-  back to the model so it self-corrects
+  back to the model, and a check that re-runs the tests before a turn ends
 - **Plan before acting** — a read-only `plan` permission mode researches the
   codebase and writes a reviewable plan before a single file changes
 - **Human-in-the-loop safety** — destructive actions pause with a diff
   preview until you approve; allow/deny/ask permission rules apply in every
   mode
-- **Sandboxed execution** — Python runs under RestrictedPython; shell
-  commands run in Docker or Bubblewrap when available
-- **Persistent memory** — a three-tier memory system, a semantic code index,
-  and durable per-project "lessons" survive across sessions
+- **Sandboxed execution** — shell commands and test runs use `sandbox-exec` on
+  macOS, or Docker or bubblewrap when available. Windows has no sandbox
+- **Project memory** — `ana.md` instructions, a semantic code index and durable
+  per-project "lessons" carry across sessions
 - **Undo anything** — per-file snapshots, single-file `undo`, and full
   session `/rewind` that restores conversation and workspace together
 - **Extensible** — MCP servers, lifecycle-hook plugins, markdown skills,
@@ -62,10 +62,10 @@ ana
 |---|---|
 | [Architecture](reference/architecture.md) | The layered stack, the agent graph, key design decisions |
 | [Permission modes](configuration/permissions.md) | `plan` / `default` / `auto_accept` and permission rules |
-| [Tools](features/tools.md) | All 34 built-in tools and how they're gated |
-| [Memory](features/memory.md) | Three memory tiers, the code index, lessons, retention |
+| [Tools](features/tools.md) | All 30 built-in tools and how they're gated |
+| [Memory](features/memory.md) | The message window, summaries, the code index, lessons, retention |
 | [Verification](features/verification.md) | Deterministic post-edit checks instead of an LLM critic |
-| [Security](reference/security.md) | Constitution, sandbox, secrets redaction, path safety |
+| [Security](reference/security.md) | Project trust, sandbox, secrets redaction, and what isn't protected |
 
 ## Extend Ana
 
@@ -85,7 +85,7 @@ FastAPI backend (localhost:8765)
    │
 LangGraph agent   safety → memory → reason → act → observe → memory ⟲
    │
-3-tier memory + semantic code index (LanceDB, SQLite, git snapshots)
+Message window, session summaries, semantic code index (LanceDB, SQLite)
    │
 Ollama (local inference, native tool calling)
 ```

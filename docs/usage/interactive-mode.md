@@ -8,7 +8,7 @@ that work without leaving the chat.
 
 | Command | Action |
 |---------|--------|
-| `/help` | Show command list |
+| `/help [command]` | Show commands, or what one does (a short terminal lists names only) |
 | `/mode [plan\|default\|auto_accept]` | Switch permission mode (no arg → picker) |
 | `/model [name]` | Switch model (no arg → picker) |
 | `/plan` / `/plan off` / `/plan execute` | Enter plan mode / approve the plan / execute it |
@@ -48,15 +48,17 @@ that work without leaving the chat.
 | ++ctrl+c++ | Interrupt the current turn; at an empty prompt, exit chat |
 
 ++shift+tab++ switches mode without leaving the prompt. The box repaints with
-the new mode's name and colour, and anything already typed is kept:
+the new mode's name and colour, and anything already typed is kept. On screen
+`default` reads **Ask first**, `auto_accept` reads **Auto**, and `plan` reads
+**Plan**; commands and flags keep taking the lowercase names.
 
 ```
-╭─ ❮ DEFAULT ❯ · qwen3-coder:30b ─────────────╮
+╭─ ❮ Ask first ❯ · qwen3.5:4b ────────────────╮
 │ ❯ fix the header
 
     [shift+tab]
 
-╭─ ❮ AUTO_ACCEPT ❯ · qwen3-coder:30b ─────────╮
+╭─ ❮ Auto ❯ · qwen3.5:4b ─────────────────────╮
 │ ❯ fix the header
 ```
 
@@ -83,13 +85,12 @@ Press ++esc++ while the agent is working — mid-answer, before a tool runs, or
 while the model is still loading — and the turn stops immediately:
 
 ```
-❯ refactor the auth module
-  Reasoning… (esc to interrupt)
-  I'll start by reading auth.py
-  ⎿  Read auth.py (241 lines)
-⎿  Interrupted by user
+│ ❯ refactor the auth module
+╰──────────────────────────────────────────╯
+● Read auth.py   241 lines
+⠧ Waiting for model…  7s   turn 12s   esc to stop
 
-❯ actually, just the token check
+⎿  Interrupted by user
 ```
 
 Whatever the agent produced before the interrupt stays in the conversation,
@@ -126,9 +127,18 @@ In `default` mode, destructive tools (file writes, deletes, shell commands)
 pause the turn with a preview — a unified diff for edits, the exact command
 for shell — and wait for your decision:
 
-- **Yes** — run this one call
-- **Always** — run it and stop asking for this tool for the rest of the session
-- **No** — reject; the model sees the rejection and adjusts
+```
+Run this command?
+  ls -la
+[y]es  [n]o  [a]lways for ls  (n) a
+Won't ask again for ls in this session.
+● Ran ls -la   9 lines
+```
+
+- **`y`** — run this one call
+- **`a`** — run it and stop asking for this tool, or for this program in the
+  shell, for the rest of the session
+- **`n`** or Enter — reject; the model sees the rejection and adjusts
 
 **Always** persists for the whole session, including when the call you
 approved then fails. The preview simulates the edit before you decide, so it
@@ -141,15 +151,28 @@ Once a tool is running without prompts — after **Always**, or in
 are still visible when nothing is asking for approval:
 
 ```
-╭─ Edited · auth.py · Change size: +12 / -3 lines ─╮
-│ --- a/auth.py                                    │
-│ +++ b/auth.py                                    │
-│ @@ -18,7 +18,16 @@                               │
-╰──────────────────────────────────────────────────╯
+╭─ Edited calc.py   +1 -1 ─────────────────────╮
+│ --- a/calc.py                                │
+│ +++ b/calc.py                                │
+│ @@ -1,2 +1,2 @@                              │
+│  def f():                                    │
+│ -    return 1                                │
+│ +    return 1  # note.                       │
+╰──────────────────────────────────────────────╯
 ```
 
+Each tool call gets one line, `●` when it worked and `✗` when it didn't. Only
+diffs and failures with more to say get a panel. The turn's last line says how it
+went, and it doesn't call a turn done while the tests it checked still fail:
+
+```
+! Finished with 1 failing test: test_calc.py   30s
+```
+
+The first finished turn in a project without an `ana.md` also says it's writing one.
+
 `auto_accept` mode skips the prompts entirely; `deny`/`ask`
-[permission rules](../configuration/permissions.md#permission-rules-allowdenyask)
+[permission rules](../configuration/permissions.md#permission-rules)
 still apply in every mode.
 
 ## The status bar

@@ -5,7 +5,7 @@ Ana ships as a self-contained binary for macOS (Apple silicon), Linux
 external dependency is [Ollama](https://ollama.com).
 
 !!! info "Intel Macs are not supported"
-    LanceDB, which backs Ana's memory and code index, has not published a
+    LanceDB, which backs Ana's lessons and code index, has not published a
     macOS x86_64 wheel since its 0.9 series and ships no source
     distribution, so an Intel build cannot be produced. Apple silicon,
     Linux, and Windows are unaffected.
@@ -108,9 +108,9 @@ Ana creates these directories on first run:
 ├── checkpoints/
 │   └── checkpoints.db ← SQLite: agent-graph checkpoints (resumable sessions)
 ├── permissions.db     ← SQLite: allow/deny/ask permission rules
-├── lancedb/           ← LanceDB: archival memory, code index, lessons
-├── memory/            ← Git repos: per-session compaction history
-│   └── {session-id}/
+├── lancedb/           ← LanceDB: code index, lessons
+├── memory/            ← Per-session compaction summaries
+│   └── {session-id}/summary.json
 ├── skills/            ← Approved skill markdown files
 ├── plugins/           ← Installed plugins (trusted code — see Security)
 ├── mcp.json           ← Configured MCP servers

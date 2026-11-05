@@ -15,8 +15,8 @@ ana
 
 **[📖 Documentation](https://matiomacedo.github.io/ana/)** · [Report an issue](https://github.com/matiomacedo/ana/issues)
 
-> **Status:** Ana is in final benchmarking ahead of its first public
-> release. This repository hosts the documentation, issue tracker, and
+> **Status:** the latest release is v0.2.0. The source lives in a private
+> repository; this one hosts the documentation, issue tracker, and
 > [binary releases](https://github.com/matiomacedo/ana/releases).
 
 ## Install
@@ -34,24 +34,37 @@ Requires [Ollama](https://ollama.com). Full details:
 
 ## Highlights
 
-- **Write and edit code** — file, patch, multi-edit, and LSP-aware editing
+- **Write and edit code** — file, multi-edit, symbol, and LSP-aware editing
   tools, with post-edit syntax → lint → test verification feeding failures
-  back to the model so it self-corrects
+  back to the model, and a check that re-runs the tests before a turn ends
 - **Plan before acting** — a read-only `plan` permission mode researches the
   codebase and writes a reviewable plan before a single file changes
 - **Human-in-the-loop safety** — destructive actions pause with a diff
   preview until you approve; allow/deny/ask permission rules apply in every
   mode
-- **Sandboxed execution** — Python runs under RestrictedPython; shell
-  commands run in Docker or Bubblewrap when available
-- **Persistent memory** — a three-tier memory system, a semantic code index,
-  and durable per-project "lessons" survive across sessions
+- **Sandboxed execution** — shell commands and test runs use `sandbox-exec` on
+  macOS, or Docker or bubblewrap when available. Windows has no sandbox
+- **Project memory** — `ana.md` instructions, a semantic code index and durable
+  per-project "lessons" carry across sessions
 - **Undo anything** — per-file snapshots, single-file `undo`, and full
   session `/rewind` that restores conversation and workspace together
 - **Extensible** — MCP servers, lifecycle-hook plugins, markdown skills,
   custom slash commands, and shell hooks
 - **Background review** — `ana watch` reviews your diffs as you save;
   `ana agents` runs long tasks in the background
+
+## What's new in v0.2.0
+
+- **Safer by default:** shell commands and test runs use `sandbox-exec` on macOS, and a
+  cloned project's hooks, plugins and MCP servers stay off until you run `ana trust`
+- **Checks before it finishes:** Ana re-runs the tests for the files it edited before a
+  turn ends, and says plainly if any still fail
+- **Faster start:** titles and `ana.md` generation wait until your first turn finishes,
+  and the automatic context window is now 32K, which uses much less memory
+- **A clearer terminal:** one-line tool steps, approvals that show what will run, and
+  error messages that say how to fix the problem. Esc now interrupts a turn
+
+See the [full release notes](https://github.com/matiomacedo/ana/releases/tag/v0.2.0).
 
 ## How it works
 
@@ -61,8 +74,9 @@ ana CLI (Typer + Rich)
 FastAPI backend (localhost:8765)
    │
 LangGraph agent   safety → memory → reason → act → observe → memory ⟲
+   │              reason → finish check → done
    │
-3-tier memory + semantic code index (LanceDB, SQLite, git snapshots)
+Message window, session summaries, semantic code index (LanceDB, SQLite)
    │
 Ollama (local inference, native tool calling)
 ```
@@ -88,9 +102,9 @@ Ana picks a default automatically based on your RAM/VRAM:
 | [Quickstart](https://matiomacedo.github.io/ana/getting-started/quickstart/) | Your first session in five minutes |
 | [CLI reference](https://matiomacedo.github.io/ana/usage/cli-reference/) | Every command, flag, and slash command |
 | [Permission modes](https://matiomacedo.github.io/ana/configuration/permissions/) | plan / default / auto_accept + permission rules |
-| [Tools](https://matiomacedo.github.io/ana/features/tools/) | All 34 built-in tools |
-| [Memory](https://matiomacedo.github.io/ana/features/memory/) | The three tiers, code index, lessons |
-| [Security model](https://matiomacedo.github.io/ana/reference/security/) | Constitution, sandbox, secrets redaction, path safety |
+| [Tools](https://matiomacedo.github.io/ana/features/tools/) | All 30 built-in tools |
+| [Memory](https://matiomacedo.github.io/ana/features/memory/) | The message window, summaries, code index, lessons |
+| [Security model](https://matiomacedo.github.io/ana/reference/security/) | Project trust, sandbox, secrets redaction, and what isn't protected |
 | [Troubleshooting](https://matiomacedo.github.io/ana/reference/troubleshooting/) | Common problems and `ana doctor` |
 
 ## Security

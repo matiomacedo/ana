@@ -12,8 +12,10 @@ redaction on output.
 
 ## Configuration
 
-Global config lives in `~/.ana/mcp.json`; a project-level `.ana/mcp.json`
-is also read:
+Global config lives in `~/.ana/mcp.json`. A project-level `.ana/mcp.json` is read once
+the project is [trusted](../reference/security.md#project-trust), and its servers start
+in that project and serve only its sessions. Servers run as you, outside the sandbox,
+with your full environment:
 
 ```json
 {
