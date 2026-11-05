@@ -8,8 +8,7 @@ $target = "windows-x64"
 # Pin a specific version (e.g. a prerelease):  $env:ANA_VERSION = "v0.1.0-rc1"
 $tag = $env:ANA_VERSION
 if (-not $tag) {
-    $release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/latest"
-    $tag = $release.tag_name
+    Write-Error "Windows isn't supported in the latest release. To install the last Windows build, set `$env:ANA_VERSION = 'v0.1.0'` and run this again."
 }
 if (-not $tag) {
     Write-Error "Could not find a published release — check https://github.com/$repo/releases"

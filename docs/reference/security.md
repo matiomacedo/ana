@@ -106,7 +106,7 @@ run inside another sandbox.
 
 ### Without a sandbox
 
-Windows has no sandbox of its own, and neither does Linux without bubblewrap. Unless
+Linux has no sandbox without bubblewrap. Unless
 you run Docker with the image built, commands run as you, with access to everything
 you can reach.
 
@@ -204,7 +204,7 @@ between isn't caught.
 
 The backend listens on `127.0.0.1` by default and requires a bearer token on every
 route except the readiness probe. The token is a random 32-byte value in
-`~/.ana/session.token`, created with mode `0600` (an ACL on Windows). Don't expose
+`~/.ana/session.token`, created with mode `0600`. Don't expose
 the port to a network.
 
 WebSocket clients send the token in the `Authorization` header, or a short-lived
@@ -213,7 +213,7 @@ is not accepted in a query string.
 
 ## Installers
 
-`install.sh` and `install.ps1` verify the download against the release's published
+`install.sh` verifies the download against the release's published
 SHA-256 checksums, then unpack and start the new version before replacing the old
 one. The checksums come from the same GitHub release as the archive, so they catch
 corruption and a swapped asset, not a compromised release.
@@ -230,8 +230,7 @@ Only add what you'd be willing to run yourself.
 
 ## What isn't protected
 
-- **Windows has no sandbox** unless you run Docker with the image built. Neither does
-  Linux without Docker or bubblewrap.
+- **Linux has no sandbox** without Docker or bubblewrap.
 - **`auto_accept` removes the last human check.** With no sandbox, the agent can do
   anything your account can, within the limits of the checks above.
 - **A command you approve is only contained by the sandbox.** Approving `python x.py`

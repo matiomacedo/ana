@@ -83,7 +83,7 @@ the window meanwhile, and a rewind or interrupt cancels it. Earlier summaries ar
 kept as written, because a summary of a summary progressively degrades.
 
 **Bearer-token localhost API.** The backend binds `127.0.0.1` and
-generates a per-install token (`~/.ana/session.token`, `chmod 600`/ACL);
+generates a per-install token (`~/.ana/session.token`, `chmod 600`);
 the CLI sends it on every HTTP and WebSocket request. See
 [Security](security.md#bearer-token).
 

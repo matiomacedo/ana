@@ -1,20 +1,27 @@
 # Installation
 
-Ana ships as a self-contained binary for macOS (Apple silicon), Linux
-(x64 and arm64), and Windows (x64) — no Python setup required. The only
-external dependency is [Ollama](https://ollama.com).
+Ana ships as a self-contained binary for macOS (Apple silicon) and Linux
+(x64 and arm64) — no Python setup required. The only external dependency is
+[Ollama](https://ollama.com).
+
+!!! info "Windows isn't supported in v0.2.0"
+    A future release will bring it back. The Windows build of
+    [v0.1.0](https://github.com/matiomacedo/ana/releases/tag/v0.1.0) is still
+    available, but it doesn't have v0.2.0's security fixes. To install it, set
+    `$env:ANA_VERSION = "v0.1.0"`, then run
+    `irm https://raw.githubusercontent.com/matiomacedo/ana/main/install.ps1 | iex`.
 
 !!! info "Intel Macs are not supported"
     LanceDB, which backs Ana's lessons and code index, has not published a
     macOS x86_64 wheel since its 0.9 series and ships no source
-    distribution, so an Intel build cannot be produced. Apple silicon,
-    Linux, and Windows are unaffected.
+    distribution, so an Intel build cannot be produced. Apple silicon and
+    Linux are unaffected.
 
 ## Prerequisites
 
 | Requirement | Notes |
 |---|---|
-| macOS on Apple silicon, Linux x64/arm64, or Windows 10+ x64 | Prebuilt binaries |
+| macOS on Apple silicon or Linux x64/arm64 | Prebuilt binaries |
 | [Ollama](https://ollama.com) | Installed and running |
 | 8 GB RAM minimum | 16 GB recommended for mid-tier models |
 
@@ -46,17 +53,6 @@ curl http://localhost:11434/api/tags
     ```bash
     curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh -s -- v0.1.0
     ```
-
-=== "Windows"
-
-    ```powershell
-    irm https://raw.githubusercontent.com/matiomacedo/ana/main/install.ps1 | iex
-    ```
-
-    This installs to `%LOCALAPPDATA%\Programs\ana` and adds it to your
-    user PATH (restart the terminal afterwards).
-
-    To install a specific version, set `$env:ANA_VERSION = "v0.1.0"` first.
 
 === "Manual download"
 
@@ -103,7 +99,7 @@ Ana creates these directories on first run:
 
 ```
 ~/.ana/
-├── session.token      ← Bearer token (auto-generated, chmod 600 / ACL)
+├── session.token      ← Bearer token (auto-generated, chmod 600)
 ├── sessions.db        ← SQLite: session metadata
 ├── checkpoints/
 │   └── checkpoints.db ← SQLite: agent-graph checkpoints (resumable sessions)
@@ -139,7 +135,7 @@ your `~/.ana/` data untouched.
     rm -rf ~/.ana/                               # all Ana runtime data
     ```
 
-=== "Windows"
+=== "Windows (v0.1.0)"
 
     ```powershell
     Remove-Item -Recurse -Force "$env:LOCALAPPDATA\Programs\ana"   # the binary

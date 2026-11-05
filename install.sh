@@ -11,7 +11,7 @@ requested_tag="${1:-${ANA_VERSION:-}}"
 case "$(uname -s)" in
   Darwin) os="macos" ;;
   Linux)  os="linux" ;;
-  *) echo "Unsupported OS: $(uname -s) (on Windows, use install.ps1)"; exit 1 ;;
+  *) echo "Unsupported OS: $(uname -s) (Windows is not supported in the latest release)"; exit 1 ;;
 esac
 case "$(uname -m)" in
   arm64|aarch64) arch="arm64" ;;

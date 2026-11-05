@@ -22,14 +22,11 @@ ana
 ## Install
 
 ```bash
-# macOS / Linux
 curl -fsSL https://raw.githubusercontent.com/matiomacedo/ana/main/install.sh | sh
-
-# Windows (PowerShell)
-irm https://raw.githubusercontent.com/matiomacedo/ana/main/install.ps1 | iex
 ```
 
-Requires [Ollama](https://ollama.com). Full details:
+Runs on macOS (Apple silicon) and Linux. Windows isn't supported in v0.2.0; a future
+release will bring it back. Requires [Ollama](https://ollama.com). Full details:
 [Installation](https://matiomacedo.github.io/ana/getting-started/installation/).
 
 ## Highlights
@@ -43,7 +40,7 @@ Requires [Ollama](https://ollama.com). Full details:
   preview until you approve; allow/deny/ask permission rules apply in every
   mode
 - **Sandboxed execution** — shell commands and test runs use `sandbox-exec` on
-  macOS, or Docker or bubblewrap when available. Windows has no sandbox
+  macOS, or Docker or bubblewrap when available
 - **Project memory** — `ana.md` instructions, a semantic code index and durable
   per-project "lessons" carry across sessions
 - **Undo anything** — per-file snapshots, single-file `undo`, and full
@@ -81,7 +78,7 @@ Message window, session summaries, semantic code index (LanceDB, SQLite)
 Ollama (local inference, native tool calling)
 ```
 
-Runs natively on macOS, Linux, and Windows. Read the full
+Read the full
 [architecture overview](https://matiomacedo.github.io/ana/reference/architecture/).
 
 ## Model recommendations

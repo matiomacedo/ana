@@ -24,7 +24,7 @@ ana
   preview until you approve; allow/deny/ask permission rules apply in every
   mode
 - **Sandboxed execution** — shell commands and test runs use `sandbox-exec` on
-  macOS, or Docker or bubblewrap when available. Windows has no sandbox
+  macOS, or Docker or bubblewrap when available
 - **Project memory** — `ana.md` instructions, a semantic code index and durable
   per-project "lessons" carry across sessions
 - **Undo anything** — per-file snapshots, single-file `undo`, and full

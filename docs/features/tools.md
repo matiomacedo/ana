@@ -116,7 +116,7 @@ latest edited file). Destructive (it mutates the file back). See
 
 **`shell_command(command)`** — runs an allow-listed program, without a shell, through
 the [sandbox](../reference/security.md#sandbox). On macOS that's `sandbox-exec` by
-default. Windows has none of its own, and Linux needs Docker or bubblewrap. It has
+default, and Linux needs Docker or bubblewrap. It has
 network access. Destructive. Not available in `plan` mode, so `plan` has no general
 shell; it inspects a repository with `git`.
 

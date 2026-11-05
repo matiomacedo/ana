@@ -138,11 +138,11 @@ outside it.
 
 ## Shell & sandbox
 
-**"shell commands run unsandboxed" on Windows or Linux**
+**"shell commands run unsandboxed" on Linux**
 
-macOS uses `sandbox-exec` by default. Elsewhere, without Docker or bubblewrap,
+macOS uses `sandbox-exec` by default. On Linux, without Docker or bubblewrap,
 `ANA_SANDBOX_MODE=auto` falls back to `local`, which isolates nothing, and lint and test
-checks are skipped until you run `ana trust`. Windows has no sandbox besides Docker. Set
+checks are skipped until you run `ana trust`. Set
 `ANA_SANDBOX_MODE=docker` or `bubblewrap` to fail with an error instead of falling back.
 
 **Shell commands time out**
