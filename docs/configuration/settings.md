@@ -22,9 +22,24 @@ in place, ++enter++ edits free-form values inline, and closing the page
 (++q++ or ++esc++) saves everything you changed — ++ctrl+c++ discards.
 Env-locked settings are shown but not editable.
 
+The page opens on the **Provider** group: the provider (`backend`), the key
+it needs (a cloud provider's `<id>_api_key`, or a local server's
+`backend_base_url` and `backend_api_key`), and the helper model
+(`background_provider`, `background_model`). Then come the CLI and the
+other backend settings. The keys of the providers you aren't using are
+folded under **Other provider keys**; press ++o++ to show or hide them.
+A key is typed hidden and never shown back, only as `set …1234`.
+
+The Mac app's **Settings → Provider** works the same way: a menu of
+providers, local servers first, the active provider's key or address under
+it, a line saying whether the key was accepted or the server answers, and a
+helper-model menu with the provider's models and your Ollama models.
+
 ```bash
 # Non-interactive / scripted:
 #   /settings verify_level lint          (backend)
+#   /settings backend anthropic          (switches now; prints models + key check)
+#   /settings anthropic_api_key sk-ant-...
 #   /settings cli:show_context_budget false
 cat ~/.ana/cli_config.toml
 cat ~/.ana/settings.json
@@ -44,16 +59,36 @@ cat ~/.ana/settings.json
 | `ANA_OLLAMA_KEEP_ALIVE` | `30m` | How long the chat model stays loaded between turns |
 | `ANA_EMBED_KEEP_ALIVE` | `2m` | How long the embedding model stays loaded after a batch — kept short so it unloads instead of evicting the chat model's KV cache |
 | `ANA_BACKGROUND_KEEP_ALIVE` | `5m` | How long helper models (compaction, titles, lessons) stay loaded after a job |
-| `ANA_BACKGROUND_MODEL` | *(auto)* | Background role: compaction summaries + lesson distillation. Defaults to the smallest installed chat model ≥ 4B params |
+| `ANA_BACKGROUND_MODEL` | *(auto)* | Background (helper) role: titles, compaction summaries, lesson distillation. Unset: the session's own model on a local provider, the provider's `background: true` preset on a cloud one, the smallest installed Ollama model with `ANA_BACKGROUND_PROVIDER=ollama` — see [Model roles](models.md#model-roles) |
+| `ANA_BACKGROUND_PROVIDER` | `active` | Where the helper runs: `active` (the active provider) \| `ollama` (a local Ollama model, even while a cloud provider answers) |
+| `ANA_THINKING_EFFORT` | `default` | How hard models that can think do so: `default` \| `off` \| `low` \| `medium` \| `high`. `/effort` overrides it per session — see [Thinking effort](models.md#thinking-effort) |
 | `ANA_ESCALATION_MODEL` | *(auto)* | Escalation role: format-repair retries and auto-escalate. Defaults to the largest installed |
 
-### Inference backend
+### Provider
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `ANA_BACKEND` | `ollama` | `ollama` \| `lmstudio` \| `llamacpp` \| `openai_compat` (covers vLLM and other OpenAI-compatible servers). Requires a backend restart |
-| `ANA_BACKEND_BASE_URL` | *(per-backend default)* | Base URL of the inference server |
-| `ANA_BACKEND_API_KEY` | — | Bearer token for the backend (local servers usually ignore it) |
+| `ANA_BACKEND` | `ollama` | The provider: `ollama` \| `lmstudio` \| `llamacpp` \| `openai_compat` (vLLM and other OpenAI-compatible servers) \| `anthropic` \| `openai` \| `google` \| `openrouter` \| `groq` \| `deepseek` \| `xai` \| `mistral` \| `together` \| `fireworks` \| `cerebras`. Set from `/settings` or the Mac app it applies on the next message, no restart — see [Providers](models.md#providers) |
+| `ANA_BACKEND_BASE_URL` | *(per-provider default)* | Base URL of the active provider only |
+| `ANA_BACKEND_API_KEY` | — | Bearer token for a local server (they usually ignore it); falls back to `OPENAI_COMPAT_API_KEY` |
+
+Cloud provider keys, each also a setting named `<id>_api_key`
+(`anthropic_api_key`, `google_api_key`…). The variable wins over the saved
+setting:
+
+| Variable | Provider |
+|---|---|
+| `ANTHROPIC_API_KEY` | Anthropic |
+| `OPENAI_API_KEY` | OpenAI |
+| `GEMINI_API_KEY`, then `GOOGLE_API_KEY` | Google Gemini |
+| `OPENROUTER_API_KEY` | OpenRouter |
+| `GROQ_API_KEY` | Groq |
+| `DEEPSEEK_API_KEY` | DeepSeek |
+| `XAI_API_KEY` | xAI |
+| `MISTRAL_API_KEY` | Mistral |
+| `TOGETHER_API_KEY` | Together AI |
+| `FIREWORKS_API_KEY` | Fireworks |
+| `CEREBRAS_API_KEY` | Cerebras |
 
 ### Agent behaviour
 
@@ -154,5 +189,5 @@ There is no built-in default ignore list — patterns come entirely from your
 
 ## Related
 
-- [Models & presets](models.md) — per-model profiles and sampling overrides
+- [Models & presets](models.md) — providers, per-model profiles, presets and thinking effort
 - [Permission modes](permissions.md) — session-level access control
