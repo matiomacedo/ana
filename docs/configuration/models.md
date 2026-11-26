@@ -1,9 +1,11 @@
 # Models & presets
 
-Ana talks to one **provider** at a time: a model server on your computer
-(Ollama, LM Studio, llama.cpp or any OpenAI-compatible server such as vLLM)
-or a cloud API (Anthropic, OpenAI, Google Gemini and others, with your own
-key). It adapts to each model through a **model profile**: probed or listed
+Ana runs models on **providers**: model servers on your computer (Ollama,
+LM Studio, llama.cpp or any OpenAI-compatible server such as vLLM) and cloud
+APIs (Anthropic, OpenAI, Google Gemini and others, with your own key). Each
+[model role](#model-roles) — the main chat model, subagents, the helper,
+escalation and embeddings — picks its own provider and model, so you can mix
+them. Ana adapts to each model through a **model profile**: probed or listed
 capabilities merged with a per-model preset.
 
 ## Providers
@@ -26,8 +28,9 @@ capabilities merged with a per-model preset.
 | Fireworks | `fireworks` | cloud | `fireworks_api_key` | `FIREWORKS_API_KEY` |
 | Cerebras | `cerebras` | cloud | `cerebras_api_key` | `CEREBRAS_API_KEY` |
 
-Pick one with the `backend` setting (`ANA_BACKEND`), in `/settings`, in the
-Mac app's **Settings → Provider**, or inline:
+The `backend` setting (`ANA_BACKEND`) is the **main provider**: what a
+session runs on unless it picks a model elsewhere. Set it in `/settings`, in
+the Mac app's **Settings → Provider**, or inline:
 
 ```text
 /settings backend anthropic
@@ -42,25 +45,25 @@ back: the settings API, `/settings` and the Mac app show only `set …1234`
 switch back and forth without typing it again. Saving an empty value removes
 a saved key.
 
-**Hot switching.** A change to `backend`, `backend_base_url` or an API key
-takes effect on the next message, with no backend restart. Ana lists the new
-provider's models, moves `default_model` to one it serves (a cloud provider's
-default preset; on a local server the usual selection), and forgets anything
-cached for the old provider. `/settings backend <id>` prints how many models
-the provider lists and whether it accepted the key. `ana models list` and the
-`/model` picker show only the active provider's models. A session keeps the
-model it chose; if that model belongs to another provider, Ana asks you to pick
-one the active provider serves.
+**Hot switching.** A change to any role's provider, a server's URL or an
+API key takes effect on the next message, with no backend restart. For a new
+main provider Ana lists its models, moves `default_model` to one it serves (a
+cloud provider's default preset; on a local server the usual selection), and
+forgets anything cached for the old one. `/settings backend <id>` prints how
+many models the provider lists and whether it accepted the key.
+
+**Picking a model.** `ana models list`, `/model` and the Mac app's model
+picker list the models of every provider a role uses, the main provider's
+first (the Mac app groups them under provider names). A session remembers the
+provider of the model it picked, so one session can run on DeepSeek while the
+main provider stays Anthropic; the Mac app then shows the model as
+`deepseek-chat · DeepSeek`.
 
 **Which cloud models.** For a cloud provider, Ana lists the models that have
 a preset (see [Presets](#model-presets)) *and* that your account can use; the
 provider's model listing also checks the key. A refused key shows as an error
 in `/settings backend <id>`, `ana doctor` and the Mac app.
 
-**Memory search with a cloud provider.** Embeddings (lessons, code search)
-never go to a cloud API. They use the active server when it is local, and a
-local Ollama otherwise. Without Ollama, lessons and the code index are off and
-`ana doctor` says so; chat works either way.
 
 ## Model selection
 
@@ -85,7 +88,7 @@ The table above applies to Ollama. A cloud provider's default model is its
 Inspect what Ana sees:
 
 ```bash
-ana models list             # the active provider's models with profiles
+ana models list             # every provider's models with profiles
 ana models info qwen3.5:9b  # full effective profile for one model
 ```
 
@@ -139,21 +142,61 @@ so set `context_length` to match what the server actually loaded.
 
 ## Model roles
 
-Beyond the main chat model, Ana uses two optional supporting roles — both
-resolved automatically, both overridable:
+Every role is a provider + model pair. Each provider defaults to `ollama`;
+each model defaults to something sensible on its provider.
 
-| Role | Used for | Default | Override |
-|---|---|---|---|
-| **Background** (helper) | Session titles, compaction summaries, lesson distillation, watch reviews | Local provider: the session's own model, so no second model loads. Cloud provider: its cheap `background: true` preset (for example Claude Haiku on Anthropic) | `background_model` (`ANA_BACKGROUND_MODEL`) |
-| **Escalation** | Format-repair retries; auto-escalate after repeated verification failures | Largest installed model that fits in memory. Off Ollama, none unless you set one | `escalation_model` (`ANA_ESCALATION_MODEL`) |
+| Role | Used for | Provider setting | Model setting | Model when unset |
+|---|---|---|---|---|
+| **Main** (orchestrator) | Your sessions, and the orchestrator that spawns subagents | `backend` | `default_model` | Picked by memory on Ollama; the provider's default preset in the cloud |
+| **Subagents** | Every subagent an orchestrating session spawns | `subagent_provider` | `subagent_model` | The session's model when it runs on that provider, else the provider's default |
+| **Helper** (background) | Session titles, compaction summaries, lesson distillation, watch reviews | `background_provider` | `background_model` | Cloud: the provider's cheap `background: true` preset (for example Claude Haiku). Local: the session's model when it runs there, so no second model loads, else the smallest Ollama model |
+| **Escalation** | Format-repair retries; auto-escalate after repeated verification failures | `escalation_provider` | `escalation_model` | On Ollama, the largest installed model that fits in memory; elsewhere none unless you set one |
+| **Embeddings** | Lessons and code search | `embedding_provider` | `embedding_model` | The provider's embedding model (below) |
 
-`background_provider` (`ANA_BACKGROUND_PROVIDER`) says where the helper runs:
-`active` (the default: the active provider) or `ollama`, which keeps helper
-calls on a local Ollama model even while a cloud provider answers chat, so they
-cost nothing. With `ollama` and no `background_model`, Ana picks the smallest
-installed Ollama chat model. In the Mac app, **Settings → Provider → Helper
-model** offers the provider's models and the installed Ollama models in one
-menu and sets both settings.
+Subagents get one pick for all of them: the orchestrator can't choose another
+model or provider for a subagent it spawns. In the Mac app each role has its
+own provider and model menus under **Settings → Provider**; in the terminal
+use `/settings`.
+
+### Example: Opus as orchestrator, DeepSeek for subagents
+
+```text
+/settings backend anthropic
+/settings anthropic_api_key sk-ant-...
+/settings default_model claude-opus-5-5
+/settings subagent_provider deepseek
+/settings deepseek_api_key sk-...
+/settings subagent_model deepseek-chat
+```
+
+Opus plans and delegates; every subagent runs on DeepSeek. The helper and
+escalation roles stay on Ollama until you move them too.
+
+### Embeddings
+
+`embedding_provider` is one of the local servers, `openai`
+(`text-embedding-3-small`), `google` (`gemini-embedding-001`), `mistral`
+(`mistral-embed`), `fireworks` (`fireworks/qwen3-embedding-8b`),
+`openrouter` (`openai/text-embedding-3-small`), or `off`. Ollama defaults to
+`qwen3-embedding:0.6b`; LM Studio, llama.cpp and other OpenAI-compatible
+servers need `embedding_model` set. Anthropic, Groq, DeepSeek, xAI, Together
+and Cerebras have no embeddings endpoint. With `off`, lessons and the code
+index are off; chat and the repo map work as usual.
+
+!!! warning "Changing the embedding provider or model deletes saved vectors"
+    Vectors from one embedding model can't be searched with another. Changing
+    `embedding_provider` or `embedding_model` while lessons or code-index
+    chunks are saved deletes them, so Ana asks first and says how many would
+    go. The code index rebuilds as you work; lessons
+    can't be recovered. Ana doesn't re-embed them automatically, because on a
+    cloud provider every re-embedded chunk is a paid API call.
+
+### Running with no local server
+
+Put every role on a cloud provider and either a cloud embedding provider or
+`off`, and Ana never needs Ollama or any other local server: `ana doctor`
+skips its Ollama checks, and `ana chat` warns only about a role whose
+provider it can't reach.
 
 ## Model presets
 
@@ -257,16 +300,18 @@ Higher effort is slower and, on cloud providers, costs more output tokens.
 
 ## Local servers other than Ollama
 
-Ana can point at any OpenAI-compatible inference server instead of Ollama
-(`backend`, plus `backend_base_url` when the server isn't on its default port
-— see [Settings](settings.md#provider)):
+Any role can run on an OpenAI-compatible inference server instead of Ollama.
+Each local server has its own address setting, so several can be in use at
+once (see [Settings](settings.md#provider)):
 
-- **LM Studio**: `backend = lmstudio` (default `http://localhost:1234`)
-- **llama.cpp** (`llama-server`): `backend = llamacpp` (default `http://localhost:8080`)
-- **vLLM or other OpenAI-compatible servers**: `backend = openai_compat` (default `http://localhost:8000`)
+- **Ollama**: `ollama_base_url` (default `http://localhost:11434`)
+- **LM Studio**: `lmstudio`, `lmstudio_base_url` (default `http://localhost:1234`)
+- **llama.cpp** (`llama-server`): `llamacpp`, `llamacpp_base_url` (default `http://localhost:8080`)
+- **vLLM or other OpenAI-compatible servers**: `openai_compat`, `openai_compat_base_url` (default `http://localhost:8000`)
 
-`backend_base_url` applies to the active provider only, so switching
-provider never sends its address to another one.
+`backend_base_url` is deprecated: it still applies to the main provider for
+one release, and a saved value is copied to that server's own setting on the
+first start.
 
 ### Speculative decoding (throughput)
 

@@ -1,8 +1,8 @@
 # Troubleshooting
 
-Start with the built-in diagnostics — it checks the Ollama binary, the
-backend, the embedding model, the port, the session token, and the runtime
-directories in one pass:
+Start with the built-in diagnostics — it checks each model role's provider
+(the Ollama binary only when a role uses Ollama), the backend, the embedding
+model, the port, the session token, and the runtime directories in one pass:
 
 ```bash
 ana doctor
@@ -32,6 +32,10 @@ above.
 
 ## Ollama problems
 
+Ollama is needed only while a [model role](../configuration/models.md#model-roles)
+runs on it — every role defaults to `ollama`. With every role on a cloud
+provider and embeddings on a cloud provider or `off`, skip this section.
+
 **"Ollama binary not found" / connection refused on port 11434**
 
 Install Ollama from [ollama.com](https://ollama.com/download) and confirm
@@ -41,7 +45,9 @@ it's running:
 curl http://localhost:11434/api/tags   # expect {"models":[...]}
 ```
 
-If Ollama runs elsewhere, set `OLLAMA_HOST` in `.env`.
+If Ollama runs elsewhere, set `ollama_base_url` (`ANA_OLLAMA_BASE_URL`, or
+`OLLAMA_HOST`). Or move the role that needs it to another provider: the
+warning names the setting.
 
 **"default_model_not_installed" warning at startup**
 
@@ -51,11 +57,16 @@ auto-select a model that fits your RAM/VRAM.
 
 **Memory features are silent / recall never finds anything**
 
-The memory system needs the embedding model:
+The memory system needs embeddings from `embedding_provider`. On Ollama (the
+default) pull the embedding model:
 
 ```bash
 ollama pull qwen3-embedding:0.6b
 ```
+
+On another provider, check its key or address, or that `embedding_model` is
+set for LM Studio, llama.cpp and OpenAI-compatible servers. With
+`embedding_provider = off`, memory search is off by design.
 
 **First response takes minutes**
 
